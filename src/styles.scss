@@ -1,1 +1,70 @@
-/* You can add global styles to this file, and also import other style files */
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+@use '@angular/material' as mat;
+@use './styles/theme.scss' as *;
+
+
+html {
+  @include mat.theme((
+    color: (
+      // primary: mat.$azure-palette,
+      // tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}/* You can add global styles to this file, and also import other style files */
+
+body {
+  background-color: var(--primary-bg);
+  color: var(--primary-text);
+  padding: 0;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: var(--primary-text);
+}
+
+::ng-deep .mat-dialog-container {
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+::ng-deep .resource-modal .mat-dialog-container {
+    border-radius: 1rem;
+    padding: 1.5rem 2rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+}
+
+@media (max-width: 600px) {
+    ::ng-deep .resource-modal .mat-dialog-container {
+        padding: 1rem;
+        width: 95vw !important;
+        max-width: 95vw !important;
+    }
+}
