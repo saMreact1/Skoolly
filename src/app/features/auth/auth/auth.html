@@ -30,7 +30,7 @@
 
         <mat-horizontal-stepper *ngIf="!isLogin" [linear]="isLinear" [(selectedIndex)]="step">
             <!-- Step 1: Basic Info -->
-            <mat-step [stepControl]="basicInfoForm">
+            <mat-step [stepControl]="basicInfoForm" class="mat-step">
                 <form [formGroup]="basicInfoForm">
                     <!-- <ng-template matStepLabel>Basic Info</ng-template> -->
 
@@ -58,13 +58,13 @@
             </mat-step>
 
             <!-- Step 2: School Info (conditionally rendered later) -->
-            <mat-step *ngIf="!schoolExists && !emailExists" [stepControl]="schoolInfoForm">
+            <mat-step *ngIf="!schoolExists && !emailExists" [stepControl]="schoolInfoForm" class="mat-step">
                 <form [formGroup]="schoolInfoForm">
                     <!-- <ng-template matStepLabel>School Info</ng-template> -->
 
                     <mat-form-field appearance="fill" class="full-width">
-                    <mat-label>School Address</mat-label>
-                    <input matInput formControlName="address">
+                        <mat-label>School Address</mat-label>
+                        <input matInput formControlName="address">
                     </mat-form-field>
 
                     <mat-form-field appearance="fill" class="full-width">
@@ -99,7 +99,7 @@
 
 
             <!-- Step 3: Personal Info -->
-            <mat-step [stepControl]="personalInfoForm">
+            <mat-step [stepControl]="personalInfoForm" class="mat-step">
                 <form [formGroup]="personalInfoForm" (submit)="onRegister()">
                     <!-- <ng-template matStepLabel>Personal Info</ng-template> -->
                     
