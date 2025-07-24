@@ -7,6 +7,7 @@ import AOS from 'aos';
 import Typed from 'typed.js'
 import { Header } from '../shared/header/header';
 import { Footer } from '../shared/footer/footer';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -18,7 +19,8 @@ import { Footer } from '../shared/footer/footer';
     MatIconModule,
     MatButtonModule,
     Header,
-    Footer
+    Footer,
+    RouterModule
   ]
 })
 export class HomeComponent implements AfterViewInit {
