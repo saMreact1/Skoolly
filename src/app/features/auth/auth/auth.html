@@ -22,13 +22,17 @@
             </mat-form-field>
 
             <button mat-flat-button color="accent" type="submit" [disabled]="loginForm.invalid">Login</button>
+
+            <div class="forgot-password-link">
+                <a routerLink="/forgot-password">Forgot Password?</a>
+            </div>
         </form>
 
         <mat-horizontal-stepper *ngIf="!isLogin" [linear]="isLinear" [(selectedIndex)]="step">
             <!-- Step 1: Basic Info -->
             <mat-step [stepControl]="basicInfoForm">
                 <form [formGroup]="basicInfoForm">
-                    <ng-template matStepLabel>Basic Info</ng-template>
+                    <!-- <ng-template matStepLabel>Basic Info</ng-template> -->
 
                     <mat-form-field appearance="fill" class="full-width">
                         <mat-label>Email</mat-label>
@@ -56,7 +60,7 @@
             <!-- Step 2: School Info (conditionally rendered later) -->
             <mat-step *ngIf="!schoolExists && !emailExists" [stepControl]="schoolInfoForm">
                 <form [formGroup]="schoolInfoForm">
-                    <ng-template matStepLabel>School Info</ng-template>
+                    <!-- <ng-template matStepLabel>School Info</ng-template> -->
 
                     <mat-form-field appearance="fill" class="full-width">
                     <mat-label>School Address</mat-label>
@@ -79,7 +83,7 @@
                     </mat-form-field>
 
                     <div class="step-actions">
-                        <button mat-button matStepperPrevious>Back</button>
+                        <button mat-button matStepperPrevious class="desktop">Back</button>
                         <button 
                             mat-flat-button color="primary"
                             [disabled]="schoolInfoForm.invalid"
@@ -87,6 +91,8 @@
                         >
                             Continue
                         </button>
+                        
+                        <button mat-button matStepperPrevious class="mobile">Back</button>
                     </div>
                 </form>
             </mat-step>
@@ -95,7 +101,7 @@
             <!-- Step 3: Personal Info -->
             <mat-step [stepControl]="personalInfoForm">
                 <form [formGroup]="personalInfoForm" (submit)="onRegister()">
-                    <ng-template matStepLabel>Personal Info</ng-template>
+                    <!-- <ng-template matStepLabel>Personal Info</ng-template> -->
                     
                     <mat-form-field appearance="fill" class="full-width">
                         <mat-label>Full Name</mat-label>
@@ -145,10 +151,11 @@
                     </mat-form-field>
 
                     <div class="step-actions">
-                        <button mat-button matStepperPrevious>Back</button>
+                        <button mat-button matStepperPrevious class="desktop">Back</button>
                         <button mat-flat-button color="accent" type="submit" [disabled]="personalInfoForm.invalid">
                             Complete Registration
                         </button>
+                        <button mat-button matStepperPrevious class="mobile">Back</button>
                     </div>
                 </form>
             </mat-step>

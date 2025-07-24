@@ -22,6 +22,8 @@ const userSchema = new mongoose.Schema({
   address: String,
   bio: String,
   profilePic: String,
+  resetToken: String,
+  resetTokenExpiry: Date,
 
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });

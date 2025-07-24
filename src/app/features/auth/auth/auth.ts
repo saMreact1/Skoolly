@@ -95,13 +95,19 @@ export class Auth implements OnInit {
         this.schoolExists = res.schoolExists;
 
         if(this.emailExists) {
-          this.snack.open('Email already exists', 'Close', { duration: 3000 });
+          this.snack.open('Email already exists', '', { 
+            duration: 3000,
+            panelClass: ['white-bg-snack']
+          });
         } else {
           this.step++;
         }
       },
       error: () => {
-        this.snack.open('Error checking email/school', 'Close', { duration: 3000 });
+        this.snack.open('Error checking email/school', '', { 
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
       }
     });
   }
@@ -115,13 +121,19 @@ export class Auth implements OnInit {
         localStorage.setItem('token', res.token);
         localStorage.setItem('user', JSON.stringify(res.user));
 
-        this.snack.open('Login successful!', 'Close', { duration: 2000 });
+        this.snack.open('Login successful!', '', { 
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
         const role = res.user.role;
 
         this.router.navigate([`/${role}`]);
       },
       error: () => {
-        this.snack.open('Invalid credentials', 'Close', { duration: 3000 });
+        this.snack.open('Invalid credentials', '', {
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
       }
     });
   }
@@ -149,7 +161,10 @@ export class Auth implements OnInit {
       next: () => {
         console.log('Registration Payload:', payload);
 
-        this.snack.open('Registered successfully!', 'Close', { duration: 3000 });
+        this.snack.open('Registered successfully!', '', {
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
         this.isLogin = true;
 
         this.basicInfoForm.reset();
@@ -158,7 +173,10 @@ export class Auth implements OnInit {
         this.step = 0; // Optional: go back to first step
       },
       error: err => {
-        this.snack.open(err.error.message || 'Registration failed.', 'Close', { duration: 3000 });
+        this.snack.open(err.error.message || 'Registration failed.', '', {
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
       }
     });
   }
