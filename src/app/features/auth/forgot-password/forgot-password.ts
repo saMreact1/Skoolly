@@ -2,10 +2,11 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { Component, OnInit } from '@angular/core';
 import { MatError, MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { AuthService } from '../../../core/services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-forgot-password',
@@ -24,17 +25,18 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class ForgotPassword implements OnInit {
   forgotForm!: FormGroup;
-  message: string = '';
 
   constructor(
     private fb: FormBuilder,
-    private auth: AuthService
+    private auth: AuthService,
+    private router: Router,
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-      this.forgotForm = this.fb.group({
-        email: ['', [Validators.required, Validators.email]]
-      })
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
+    })
   }
 
   onSubmit() {
@@ -42,10 +44,17 @@ export class ForgotPassword implements OnInit {
 
   this.auth.forgotPassword(this.forgotForm.value.email).subscribe({
     next: () => {
-      this.message = 'Password reset link sent to your email';
+      this.snack.open('Reset password link successfully sent', '', { 
+        duration: 3000,
+        panelClass: ['white-bg-snack']
+      });
+    this.router.navigate(['']);
     },
     error: (err) => {
-      this.message = err.error?.message || 'Something went wrong';
+      this.snack.open('Error sending a reset link', '', { 
+        duration: 3000,
+        panelClass: ['white-bg-snack']
+        });
     },
   });
 }

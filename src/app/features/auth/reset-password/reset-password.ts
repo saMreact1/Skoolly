@@ -5,8 +5,10 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-reset-password',
@@ -16,7 +18,8 @@ import { AuthService } from '../../../core/services/auth.service';
     MatLabel,
     MatInputModule,
     MatButtonModule,
-    NgIf
+    RouterModule,
+    MatCardModule
   ],
   templateUrl: './reset-password.html',
   styleUrl: './reset-password.scss'
@@ -29,16 +32,16 @@ export class ResetPassword implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private http: HttpClient,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private snack: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-      this.token = this.route.snapshot.queryParamMap.get('token') || '';
-      this.resetForm = this.fb.group({
-        newPassword: ['', [Validators.required, Validators.minLength(7)]]
-      })
+    this.token = this.route.snapshot.paramMap.get('token') || '';
+    this.resetForm = this.fb.group({
+      newPassword: ['', [Validators.required, Validators.minLength(7)]]
+    })
   }
 
   onSubmit() {
@@ -46,11 +49,18 @@ export class ResetPassword implements OnInit {
 
     this.auth.resetPassword(this.token, this.resetForm.value.newPassword).subscribe({
       next: () => {
-        this.message = 'Password successfully reset. Redirecting...';
-        setTimeout(() => this.router.navigate(['/login']), 3000);
+        this.snack.open('Password Successfully Reset. Redirecting...', '', { 
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
+      setTimeout(() => this.router.navigate(['/auth']), 3000);
       },
       error: (err) => {
-        this.message = err.error.message || 'Error resetting password';
+        this.snack.open('Error resetting password', '', { 
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
+        setTimeout(() => this.router.navigate(['/forgot-password']), 3000);
       }
     })
   }

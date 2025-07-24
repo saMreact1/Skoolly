@@ -129,13 +129,15 @@ exports.forgotPassword = async (req, res) => {
     });
 
     const mailOptions = {
-      from: '"Task Manager" <no-reply@taskmanager.com>',
+      from: `"SkooLLy" <no-reply@skoolly.com>`,
       to: email,
-      subject: 'Password Reset',
+      subject: 'Reset Your Password - SkooLLy',
       html: `
-        <p>You requested a password reset</p>
-        <p>Click <a href="${resetLink}">here</a> to reset your password</p>
-      `,
+        <h2>Forgot your password?</h2>
+        <p>Click the link below to reset it:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>If you didn’t request this, ignore this email.</p>
+      `
     };
 
     await transporter.sendMail(mailOptions);
@@ -150,24 +152,21 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
-  if (!token || !newPassword)
-    return res.status(400).json({ message: 'Token and new password required' });
-
   try {
-    // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    const userId = decoded.userId;
 
+    const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Hash and update password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
     res.status(200).json({ message: 'Password reset successful' });
-  } catch (err) {
-    console.error('Reset error:', err);
-    res.status(400).json({ message: 'Invalid or expired token' });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).json({ message: 'Invalid or expired token' });
   }
 };
+
