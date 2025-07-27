@@ -18,8 +18,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem 1rem 0;
-  height: 100vh;
+  padding: 0 1rem;
+  min-height: 100vh;
   background-color: var(--primary-bg);
   color: var(--primary-text);
 }
@@ -27,6 +27,7 @@
 .auth-box {
   background: #ffffff9a;
   padding: 2rem;
+  margin: 3rem;
   border-radius: 1rem;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   width: 70%;
@@ -131,6 +132,15 @@ mat-horizontal-stepper {
   width: 100%;
 }
 
+.file-input {
+  padding-top: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  padding: 10px;
+}
+
 .step-actions {
   margin-top: 2rem;
   display: flex;
@@ -155,10 +165,6 @@ mat-horizontal-stepper {
 //
 
 @media (max-width: 768px) {
-  .auth-container {
-    padding: 5rem 1rem 0;
-  }
-
   .auth-box {
     padding: 1.5rem;
     max-width: 100%;

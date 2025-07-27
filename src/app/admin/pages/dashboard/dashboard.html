@@ -1,0 +1,47 @@
+<section class="overview" *ngIf="overview">
+    <app-overview-card
+        title="Total Students"
+        icon="school"
+        [value]="overview?.totalStudents"
+    ></app-overview-card>
+
+    <app-overview-card
+        title="Total Teachers"
+        icon="group"
+        [value]="overview?.totalTeachers"
+    ></app-overview-card>
+
+    <app-overview-card
+        title="Attendance Today"
+        icon="event_available"
+        [value]="overview?.attendanceToday"
+    ></app-overview-card>
+</section>
+
+<section class="chart-grid">
+  <app-chart-widget
+    chartType="line"
+    title="Weekly Attendance"
+    [data]="attendanceData"
+  ></app-chart-widget>
+
+  <app-notice-board></app-notice-board>
+</section>
+
+<section class="chart-grid">
+    <app-chart-widget
+        chartType="bar"
+        title="Classwise Student Count"
+        [data]="classData"
+    ></app-chart-widget>
+
+    <app-chart-widget
+    chartType="donut"
+    title="Population Breakdown"
+    [data]="populationData"
+  ></app-chart-widget>
+</section>
+
+<!-- <section class="notice">
+  <app-notice-board></app-notice-board>
+</section> -->

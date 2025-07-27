@@ -7,6 +7,9 @@ const schoolSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  logo: String,
+  schoolEmail: String,
+  schoolPhone: String,
   address: {
     type: String,
     required: true
@@ -18,6 +21,15 @@ const schoolSchema = new mongoose.Schema({
   schoolType: {
     type: [String], // e.g. ["nursery", "primary"]
     enum: ['nursery', 'primary', 'secondary', 'college'],
+    required: true
+  },
+  tenantId: {
+    type: String,
+    required: true
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   createdAt: {

@@ -9,7 +9,8 @@ const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'auth', component: Auth },
   { path: 'forgot-password', component: ForgotPassword },
-  { path: 'reset-password/:token', component: ResetPassword }
+  { path: 'reset-password/:token', component: ResetPassword },
+  { path: 'admin', loadChildren: () => import('./admin/admin-module').then(m => m.AdminModule) }
 ];
 
 @NgModule({

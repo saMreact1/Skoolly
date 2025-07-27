@@ -5,11 +5,13 @@ const sendResetEmail = async (to, token) => {
   const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // use TLS
     auth: {
-      user: process.env.EMAIL_USER, // your Gmail or SMTP email
-      pass: process.env.EMAIL_PASS  // your app password or email password
-    }
+      user: process.env.MAIL_USER,
+      pass: process.env.MAIL_PASS,
+    },
   });
 
   const mailOptions = {
@@ -33,4 +35,24 @@ const sendResetEmail = async (to, token) => {
   }
 };
 
-module.exports = sendResetEmail;
+const sendEmail = async ({ to, subject, html }) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.MAIL_USER, // your Gmail address
+      pass: process.env.MAIL_PASS  // your Gmail App Password
+    }
+  });
+
+  const mailOptions = {
+    from: `"Skoolly" <${process.env.MAIL_USER}>`,
+    to,
+    subject,
+    html
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+
+module.exports = {sendResetEmail, sendEmail};

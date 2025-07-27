@@ -19,6 +19,17 @@ const userSchema = new mongoose.Schema({
     state: String,
     schoolType: [String],
   },
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  isVerified: { 
+    type: Boolean, 
+    default: false 
+  },
+  verificationToken: String,
+  verificationTokenExpires: Date,
   address: String,
   bio: String,
   profilePic: String,

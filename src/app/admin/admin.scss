@@ -1,0 +1,109 @@
+.dashboard-layout {
+    display: flex;
+    height: 100vh;
+    background-color: #f6f8fa;
+    overflow: hidden;
+
+    .sidebar {
+        width: 180px;
+        background: #000;
+        color: #fff;
+        padding: 1.5rem 1rem;
+        display: flex;
+        flex-direction: column;
+        transition: width .4s ease;
+
+        &.collapsed {
+            width: 60px;
+
+            .logo span, nav a span {
+                display: none;
+            }
+
+            nav a mat-icon {
+                margin-right: 0 auto;
+            }
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        nav a {
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: .8rem;
+            margin: .5rem 0;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background .3s ease;
+
+            mat-icon {
+                margin-right: 1rem;
+            }
+
+            &.active, &:hover {
+                background: var(--primary-bg);
+                color: var(--primary-text);
+            }
+        }
+        .profile {
+            position: absolute;
+            bottom: 2rem;
+        }
+    }
+
+    .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+
+        .topbar-user {
+            background: rgba(255, 255, 255, 0.498);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            padding: 1rem 2rem 1rem 0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+
+            .right {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+
+                .notify {
+                    cursor: pointer;
+
+                    &:hover {
+                        transform: scale(1.05);
+                    }
+                }
+                .avatar {
+                    height: 40px;
+                    width: 40px;
+                    border-radius: 50%;
+                    border: 2px solid #fff;
+                    cursor: pointer;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                    transition: transform 0.2s ease;
+
+                    &:hover {
+                        transform: scale(1.05);
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+                    }
+                }
+            }
+        }
+
+        .content {
+            padding: 1.5rem;
+            overflow: auto;
+        }
+    }
+}

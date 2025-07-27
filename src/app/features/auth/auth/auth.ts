@@ -1,4 +1,5 @@
-import { NgIf } from '@angular/common';
+import { ClassService } from './../../../core/services/class.service';
+import { NgIf, NgFor, NgForOf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -27,6 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
     MatSnackBarModule,
     MatCardModule,
     NgIf,
+    NgFor,
     MatIconModule,
     RouterModule
   ],
@@ -37,6 +39,9 @@ export class Auth implements OnInit {
   isLogin: boolean = true;
   isLinear: boolean = true;
   step: number = 0;
+  selectedLogoFile: File | null = null;
+  availableClasses: any[] = [];
+  tenantId: string = '';
 
   basicInfoForm!: FormGroup;
   schoolInfoForm!: FormGroup;
@@ -50,7 +55,8 @@ export class Auth implements OnInit {
     private fb: FormBuilder,
     private snack: MatSnackBar,
     private router: Router,
-    private auth: AuthService
+    private auth: AuthService,
+    private classService: ClassService
   ) {}
 
   ngOnInit(): void {
@@ -65,9 +71,12 @@ export class Auth implements OnInit {
     });
 
     this.schoolInfoForm = this.fb.group({
+      schoolEmail: ['', [Validators.required, Validators.email]],
+      schoolPhone: ['', [Validators.required, Validators.pattern('^\\d{11}$')]],
       address: ['', Validators.required],
       schoolType: [[], Validators.required],
-      state: ['', Validators.required]
+      state: ['', Validators.required],
+      logo: ['', Validators.required]
     });
 
     this.personalInfoForm = this.fb.group({
@@ -77,8 +86,25 @@ export class Auth implements OnInit {
       bio: [''],
       role: ['', Validators.required],
       password: ['', [Validators.required, Validators.minLength(7)]],
-      confirmPassword: ['', Validators.required]
+      confirmPassword: ['', Validators.required],
+      classId: [''],
     }, { validators: this.passwordMatchValidator });
+
+    this.personalInfoForm.get('role')?.valueChanges.subscribe(role => {
+      if (role === 'student' && this.schoolExists && this.tenantId) {
+        this.classService.getClassesByTenant(this.tenantId).subscribe({
+          next: (classes) => {
+            this.availableClasses = classes;
+          },
+          error: () => {
+            this.snack.open('Could not fetch classes for this school.', '', {
+              duration: 3000,
+              panelClass: ['white-bg-snack']
+            });
+          }
+        });
+      }
+    });
   }
 
   passwordMatchValidator(group: FormGroup) {
@@ -93,6 +119,10 @@ export class Auth implements OnInit {
       next: (res: any) => {
         this.emailExists = res.emailExists;
         this.schoolExists = res.schoolExists;
+
+        if (this.schoolExists && res.school) {
+          this.tenantId = res.school.tenantId; 
+        }
 
         if(this.emailExists) {
           this.snack.open('Email already exists', '', { 
@@ -146,6 +176,9 @@ export class Auth implements OnInit {
       schoolName: this.basicInfoForm.value.schoolName,
       address: this.schoolInfoForm.value.address,
       state: this.schoolInfoForm.value.state,
+      logo: this.schoolInfoForm.value.logo,
+      schoolEmail: this.schoolInfoForm.value.schoolEmaul,
+      schoolPhone: this.schoolInfoForm.value.schoolPhone,
       schoolType: this.schoolInfoForm.value.schoolType,
       fullName: this.personalInfoForm.value.fullName,
       phone: this.personalInfoForm.value.phone,
@@ -154,6 +187,7 @@ export class Auth implements OnInit {
       role: this.personalInfoForm.value.role,
       password: this.personalInfoForm.value.password,
       confirmPassword: this.personalInfoForm.value.confirmPassword,
+      classId: this.personalInfoForm.value.classId,
       schoolInfo: this.schoolExists ? null : this.schoolInfoForm.value
     };
 
@@ -161,7 +195,7 @@ export class Auth implements OnInit {
       next: () => {
         console.log('Registration Payload:', payload);
 
-        this.snack.open('Registered successfully!', '', {
+        this.snack.open('Registered successfully! A verification link has been sent to your email.', '', {
           duration: 3000,
           panelClass: ['white-bg-snack']
         });
@@ -179,5 +213,13 @@ export class Auth implements OnInit {
         });
       }
     });
+  }
+
+  onLogoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedLogoFile = input.files[0];
+      console.log('Selected logo:', this.selectedLogoFile);
+    }
   }
 }
