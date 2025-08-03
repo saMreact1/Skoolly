@@ -1,4 +1,3 @@
-// src/app/admin/services/admin.service.ts
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -12,6 +11,10 @@ export class AdminService {
   constructor(private http: HttpClient) {}
 
   getOverview(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/dashboard`);
+    return this.http.get(`${this.baseUrl}/overview`);
+  }
+
+  getClassCount(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/class-count`);
   }
 }

@@ -1,20 +1,14 @@
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 
-const logoStorage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const folder = path.join(__dirname, '../uploads/logos');
-    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
-    cb(null, folder);
+    cb(null, 'uploads/logos'); // create this folder
   },
   filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const filename = `${Date.now()}-${file.fieldname}${ext}`;
-    cb(null, filename);
-  },
+    cb(null, Date.now() + path.extname(file.originalname)); // e.g., 16299812345.png
+  }
 });
 
-const uploadLogo = multer({ storage: logoStorage });
-
-module.exports = uploadLogo;
+const upload = multer({ storage });
+module.exports = upload;

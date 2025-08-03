@@ -1,7 +1,7 @@
 import { ClassService } from './../../../core/services/class.service';
 import { NgIf, NgFor, NgForOf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -88,44 +88,43 @@ export class Auth implements OnInit {
       password: ['', [Validators.required, Validators.minLength(7)]],
       confirmPassword: ['', Validators.required],
       classId: [''],
-    }, { validators: this.passwordMatchValidator });
+    }, { validators: this.matchPasswords('password', 'confirmPassword') });
 
     this.personalInfoForm.get('role')?.valueChanges.subscribe(role => {
-      if (role === 'student' && this.schoolExists && this.tenantId) {
-        this.classService.getClassesByTenant(this.tenantId).subscribe({
-          next: (classes) => {
-            this.availableClasses = classes;
-          },
-          error: () => {
-            this.snack.open('Could not fetch classes for this school.', '', {
-              duration: 3000,
-              panelClass: ['white-bg-snack']
-            });
-          }
-        });
-      }
+      this.fetchClassesForTenant();
     });
   }
 
-  passwordMatchValidator(group: FormGroup) {
-    return group.get('password')?.value === group.get('confirmPassword')?.value
-      ? null
-      : { mismatch: true };
+  matchPasswords(controlName: string, matchingControlName: string): ValidatorFn {
+    return (group: AbstractControl) => {
+      const control = group.get(controlName);
+      const match = group.get(matchingControlName);
+      return control?.value === match?.value ? null : { mismatch: true };
+    };
   }
 
-  goToNextStep() {
+
+  goToNextStep(): void {
     const { email, schoolName } = this.basicInfoForm.value;
+    console.log('🟡 Sending to backend:', { email, schoolName });
+
     this.auth.checkSchoolAndEmail(email, schoolName).subscribe({
       next: (res: any) => {
         this.emailExists = res.emailExists;
         this.schoolExists = res.schoolExists;
 
         if (this.schoolExists && res.school) {
-          this.tenantId = res.school.tenantId; 
+          this.tenantId = res.school.tenantId;
+          console.log('✅ Tenant ID received:', this.tenantId);
+
+          // Only fetch classes after tenantId is guaranteed to be set
+          if (this.personalInfoForm.get('role')?.value === 'student') {
+            this.fetchClassesForTenant();
+          }
         }
 
-        if(this.emailExists) {
-          this.snack.open('Email already exists', '', { 
+        if (this.emailExists) {
+          this.snack.open('Email already exists', '', {
             duration: 3000,
             panelClass: ['white-bg-snack']
           });
@@ -134,7 +133,23 @@ export class Auth implements OnInit {
         }
       },
       error: () => {
-        this.snack.open('Error checking email/school', '', { 
+        this.snack.open('Error checking email/school', '', {
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
+      }
+    });
+  }
+
+  fetchClassesForTenant(): void {
+    if (!this.tenantId || !this.schoolExists) return;
+
+    this.classService.getClassesByTenant(this.tenantId).subscribe({
+      next: (classes) => {
+        this.availableClasses = classes;
+      },
+      error: () => {
+        this.snack.open('Could not fetch classes for this school.', '', {
           duration: 3000,
           panelClass: ['white-bg-snack']
         });
@@ -143,8 +158,7 @@ export class Auth implements OnInit {
   }
 
   onLogin() {
-    const email = (document.querySelector('input[type="email"]') as HTMLInputElement)?.value;
-    const password = (document.querySelector('input[type="password"]') as HTMLInputElement)?.value;
+    const { email, password } = this.loginForm.value;
 
     this.auth.login({ email, password }).subscribe({
       next: (res: any) => {
@@ -171,15 +185,40 @@ export class Auth implements OnInit {
   onRegister() {
     if (this.personalInfoForm.invalid) return;
 
-    const payload = {
-      email: this.basicInfoForm.value.email,
-      schoolName: this.basicInfoForm.value.schoolName,
-      address: this.schoolInfoForm.value.address,
-      state: this.schoolInfoForm.value.state,
-      logo: this.schoolInfoForm.value.logo,
-      schoolEmail: this.schoolInfoForm.value.schoolEmaul,
-      schoolPhone: this.schoolInfoForm.value.schoolPhone,
-      schoolType: this.schoolInfoForm.value.schoolType,
+    const role = this.personalInfoForm.value.role;
+    const classId = this.personalInfoForm.value.classId;
+
+    if (role === 'student' && !classId) {
+      this.snack.open('Please select your class.', '', {
+        duration: 3000,
+        panelClass: ['white-bg-snack']
+      });
+      return;
+    }
+
+    const formData = new FormData();
+
+    // Flatten all your form data
+    formData.append('email', this.basicInfoForm.value.email);
+    formData.append('schoolName', this.basicInfoForm.value.schoolName);
+    formData.append('schoolExists', JSON.stringify(this.schoolExists));
+
+    if (!this.schoolExists) {
+      const schoolInfo = this.schoolInfoForm.value;
+      formData.append('schoolInfo', JSON.stringify({
+        schoolEmail: schoolInfo.schoolEmail,
+        schoolPhone: schoolInfo.schoolPhone,
+        address: schoolInfo.address,
+        schoolType: schoolInfo.schoolType,
+        state: schoolInfo.state
+      }));
+
+      if (this.selectedLogoFile) {
+        formData.append('logo', this.selectedLogoFile); // 👈 THE ACTUAL FILE
+      }
+    }
+
+    formData.append('personalInfo', JSON.stringify({
       fullName: this.personalInfoForm.value.fullName,
       phone: this.personalInfoForm.value.phone,
       gender: this.personalInfoForm.value.gender,
@@ -187,24 +226,17 @@ export class Auth implements OnInit {
       role: this.personalInfoForm.value.role,
       password: this.personalInfoForm.value.password,
       confirmPassword: this.personalInfoForm.value.confirmPassword,
-      classId: this.personalInfoForm.value.classId,
-      schoolInfo: this.schoolExists ? null : this.schoolInfoForm.value
-    };
+      classId: this.personalInfoForm.value.classId
+    }));
 
-    this.auth.register(payload).subscribe({
+    this.auth.register(formData).subscribe({
       next: () => {
-        console.log('Registration Payload:', payload);
-
-        this.snack.open('Registered successfully! A verification link has been sent to your email.', '', {
+        this.snack.open('Registered successfully!', '', {
           duration: 3000,
           panelClass: ['white-bg-snack']
         });
         this.isLogin = true;
-
-        this.basicInfoForm.reset();
-        this.schoolInfoForm.reset();
-        this.personalInfoForm.reset();
-        this.step = 0; // Optional: go back to first step
+        this.resetForms();
       },
       error: err => {
         this.snack.open(err.error.message || 'Registration failed.', '', {
@@ -215,11 +247,25 @@ export class Auth implements OnInit {
     });
   }
 
+  resetForms() {
+    this.loginForm.reset();
+    this.basicInfoForm.reset();
+    this.schoolInfoForm.reset();
+    this.personalInfoForm.reset();
+    this.selectedLogoFile = null;
+    this.tenantId = '';
+    this.emailExists = false;
+    this.schoolExists = false;
+    this.availableClasses = [];
+    this.step = 0;
+  }
+
   onLogoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       this.selectedLogoFile = input.files[0];
-      console.log('Selected logo:', this.selectedLogoFile);
+
+      this.schoolInfoForm.get('logo')?.setValue(this.selectedLogoFile.name)
     }
   }
 }

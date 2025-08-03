@@ -1,5 +1,5 @@
-const crypto = require('crypto')
 const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose')
 const User = require('../models/user.model');
 const Student = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
@@ -8,212 +8,183 @@ const nodemailer = require('nodemailer');
 const School = require('../models/school.model');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/token');
+const generateDefaultClasses = require('../utils/generateClasses')
 
 exports.register = async (req, res) => {
-  const {
-    fullName,
-    email,
-    password,
-    role = 'student',
-    schoolName,
-    schoolType,
-    address,
-    state,
-    phone,
-    gender,
-    bio,
-    schoolPhone,
-    schoolEmail,
-    classId // 🧠 Make sure this comes from frontend if role === 'student'
-  } = req.body;
+  const session = await mongoose.startSession();
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: 'Email already exists' });
+    session.startTransaction(); // ✅ Only start ONCE
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    let school = await School.findOne({ name: schoolName });
-    let user;
+    const {
+      email,
+      schoolName,
+      schoolExists: rawSchoolExists,
+      schoolInfo: rawSchoolInfo,
+      personalInfo: rawPersonalInfo
+    } = req.body;
 
-    if (role === 'admin') {
-      if (school) {
-        return res.status(400).json({ message: 'An admin is already registered for this school.' });
+    const schoolExists = JSON.parse(rawSchoolExists);
+    const schoolInfo = rawSchoolInfo ? JSON.parse(rawSchoolInfo) : null;
+    const personalInfo = JSON.parse(rawPersonalInfo);
+
+    console.log("REQ.BODY:", req.body);
+
+    // ✅ Normalize school name
+    const normalizedSchoolName = schoolName.toLowerCase().trim();
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email }).session(session);
+    if (existingUser) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: 'Email already exists' });
+    }
+
+    let school;
+
+    if (!schoolExists) {
+      const existingSchool = await School.findOne({ name: normalizedSchoolName }).session(session);
+
+      if (existingSchool) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ message: 'School already exists' });
       }
 
-      user = new User({
-        fullName,
-        email,
-        phone,
-        password: hashedPassword,
-        role,
-        gender,
-        bio,
-        schoolName,
-        tenantId: undefined // set later
-      });
+      const logoFilename = req.file ? req.file.filename : null;
 
-      user.tenantId = user._id;
-      await user.save();
+      school = await School.create([{
+        name: normalizedSchoolName,
+        email: schoolInfo.schoolEmail,
+        phone: schoolInfo.schoolPhone,
+        address: schoolInfo.address,
+        schoolType: schoolInfo.schoolType,
+        logo: logoFilename,
+        state: schoolInfo.state
+      }], { session });
 
-      school = new School({
-        name: schoolName,
-        address,
-        state,
-        schoolType,
-        phone: schoolPhone,
-        email: schoolEmail,
-        logo: req.file?.filename || 'default.png',
-        createdBy: user._id,
-        tenantId: user._id
-      });
+      school = school[0]; // create() returns an array with a session
 
-      await school.save();
+      await generateDefaultClasses(schoolInfo.schoolType, school._id, session);
 
-      user.school = school._id;
-      await user.save();
-
-      const defaultClasses = [];
-
-      if (schoolType.includes('nursery')) {
-        defaultClasses.push('KG 1', 'KG 2', 'Nursery 1', 'Nursery 2');
-      }
-      if (schoolType.includes('primary')) {
-        defaultClasses.push('Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6');
-      }
-      if (schoolType.includes('secondary')) {
-        defaultClasses.push('JSS 1', 'JSS 2', 'JSS 3', 'SS 1', 'SS 2', 'SS 3');
-      }
-      if (schoolType.includes('college')) {
-        defaultClasses.push('100 Level', '200 Level', '300 Level', '400 Level');
-      }
-
-      // Create the classes
-      for (const className of defaultClasses) {
-        await Class.create({
-          name: className,
-          school: school._id,
-          tenantId: school.tenantId
-        });
-      }
     } else {
+      school = await School.findOne({ name: normalizedSchoolName }).session(session);
       if (!school) {
-        return res.status(400).json({ message: 'School does not exist. Please contact the admin.' });
-      }
-
-      user = new User({
-        fullName,
-        email,
-        phone,
-        password: hashedPassword,
-        role,
-        gender,
-        bio,
-        schoolName,
-        school: school._id,
-        tenantId: school.createdBy
-      });
-
-      await user.save();
-
-      const profileData = {
-        user: user._id,
-        fullName,
-        email,
-        gender,
-        bio,
-        school: school._id,
-        tenantId: school.createdBy,
-      };
-
-      if (role === 'student') {
-        if (!classId) {
-          return res.status(400).json({ message: 'Student must be assigned to a class.' });
-        }
-
-        await Student.create({
-          ...profileData,
-          classId,
-        });
-
-      } else if (role === 'teacher') {
-        await Teacher.create(profileData);
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({ message: 'School not found' });
       }
     }
 
-    const token = generateToken(user);
-    res.status(201).json({ user, token, message: 'Verification email sent' });
+    if (personalInfo.classId === '') {
+      delete personalInfo.classId;
+    }
+
+    personalInfo.email = email;
+
+    const hashedPassword = await bcrypt.hash(personalInfo.password, 10);
+
+    const user = new User({
+      ...personalInfo,
+      password: hashedPassword,
+      tenantId: school._id
+    });
+
+    await user.save({ session });
+
+    if (user.role === 'student') {
+      const student = new Student({
+        ...personalInfo,
+        classId: personalInfo.classId,
+        tenantId: school._id,
+        schoolName: school.name
+      });
+
+      await student.save({ session });
+    } else if (user.role === 'teacher') {
+      const teacher = new Teacher({
+        ...personalInfo,
+        subject: personalInfo.subject || '',
+        tenantId: school._id,
+        schoolName: school.name
+      });
+      
+      await teacher.save({ session });
+    }
+
+    await session.commitTransaction(); // ✅ Success
+    session.endSession();
+
+    return res.status(201).json({ message: 'Registration successful' });
 
   } catch (err) {
-    console.error('Registration Error:', err);
-    res.status(500).json({ message: 'Registration failed', error: err.message });
+    try {
+      await session.abortTransaction(); // ✅ Only if it was started
+    } catch (abortErr) {
+      console.warn('Tried to abort a transaction that was never started.');
+    }
+    session.endSession();
+    console.error('REGISTRATION FAILED:', err);
+    return res.status(500).json({ message: 'Registration failed', error: err.message });
   }
 };
 
 
-
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  
   try {
-    const user = await User.findOne({ email }).select('+password');
+    const { email, password } = req.body;
 
-    if (!user || !user.password) {
-      return res.status(404).json({ message: 'Invalid email or password' });
-    }
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'Invalid email or password' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+    if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
 
-    // Optional: check if email is verified before allowing login
-    // if (!user.isVerified) {
-    //   return res.status(403).json({ message: 'Please verify your email to log in.' });
-    // }
-
-    user.password = undefined; // never send password back
     const token = generateToken(user);
 
-    res.status(200).json({ user, token });
+    res.json({ token, user });
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
 
 
-// exports.checkSchoolAndEmail = async (req, res) => {
-//   try {
-//     const { email, schoolName } = req.body;
-
-//     const emailExists = await User.exists({ email });
-//     const school = await School.findOne({ name: schoolName });
-
-//     const schoolExists = !!school;
-
-//     res.status(200).json({
-//       emailExists: !!emailExists,
-//       schoolExists,
-//       school: schoolExists ? school : null,
-//     });
-//   } catch (error) {
-//     console.error('Error checking school and email:', error);
-//     res.status(500).json({ message: 'Server error' });
-//   }
-// };
 exports.checkSchoolAndEmail = async (req, res) => {
   const { email, school } = req.body;
 
-  try {
-    const emailExists = await User.findOne({ email });
-    const schoolExists = await School.findOne({ name: school });
+  if (!school) {
+    return res.status(400).json({ success: false, message: 'schoolName is required' });
+  }
 
-    return res.status(200).json({
-      emailExists: !!emailExists,
-      schoolExists: !!schoolExists,
-      school: schoolExists || null
-    });
+  try {
+    const emailExists = await User.exists({ email });
+
+    // 🔧 Fetch the actual school document
+    const existingSchool = await School.findOne({ name: school });
+
+    if (existingSchool) {
+      return res.status(200).json({
+        emailExists,
+        schoolExists: true,
+        school: {
+          _id: existingSchool._id,
+          name: existingSchool.name,
+          tenantId: existingSchool._id // or use ._id directly as tenantId
+        }
+      });
+    } else {
+      return res.status(200).json({
+        emailExists,
+        schoolExists: false,
+        school: null
+      });
+    }
   } catch (err) {
-    res.status(500).json({ message: 'Check failed', error: err.message });
+    return res.status(500).json({ message: 'Check failed', error: err.message });
   }
 };
+
 
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
@@ -277,51 +248,3 @@ exports.resetPassword = async (req, res) => {
     return res.status(400).json({ message: 'Invalid or expired token' });
   }
 };
-
-// exports.verifyEmail = async (req, res) => {
-//   const { token } = req.query;
-
-//   const user = await User.findOne({
-//     verificationToken: token,
-//     verificationTokenExpires: { $gt: new Date() },
-//   });
-
-//   if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
-
-//   user.isVerified = true;
-//   user.verificationToken = undefined;
-//   user.verificationTokenExpires = undefined;
-
-//   await user.save();
-
-//   res.redirect('http://localhost:4200/verified'); // or a nice "Email verified!" frontend page
-// };
-
-// exports.resendVerification = async (req, res) => {
-//   const user = req.user;
-
-//   if (!user) return res.status(401).json({ message: 'Unauthorized' });
-
-//   if (user.isVerified) {
-//     return res.status(400).json({ message: 'User already verified.' });
-//   }
-
-//   const verificationToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-//   const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-
-//   const html = `
-//     <h2>Email Verification</h2>
-//     <p>Click the link below to verify your account:</p>
-//     <a href="${verificationLink}">${verificationLink}</a>
-//   `;
-
-//   await sendEmail({
-//     to: user.email,
-//     subject: 'Verify your SkooLLy email',
-//     html
-//   });
-
-//   res.status(200).json({ message: 'Verification email sent again.' });
-// };
-

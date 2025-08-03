@@ -45,9 +45,12 @@ exports.createClass = async (req, res) => {
 
 // GET classes by school name (for pre-registration lookup)
 exports.getClassesByTenantId = async (req, res) => {
-  const { tenantId } = req.params;
-
-  const classes = await Class.find({ tenantId });
-  res.status(200).json(classes);
+  try {
+    const { tenantId } = req.params;
+    const classes = await Class.find({ schoolId: tenantId }); // 👈 this line is key
+    res.status(200).json(classes);
+  } catch (err) {
+    console.error('❌ Error fetching classes by tenant:', err);
+    res.status(500).json({ message: 'Server error fetching classes.' });
+  }
 };
-

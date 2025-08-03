@@ -5,24 +5,39 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: String,
+  gender: String,
+  bio: String,
+  address: String,
+  dob: Date,
   email: {
     type: String,
-    unique: true
+    required: true,
+    unique: true,
   },
-  password: String,
+  role: {
+    type: String,
+    default: 'student',
+  },
+  password: {
+    type: String,
+    required: true,
+  },
   classId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Class',
+  },
+  schoolName: {
+    type: String,
     required: true,
   },
-  gender: String,
-  age: Number,
-  bio: String,
-  phone: String,
-  address: String,
-  profilePic: String,
-  resetToken: String,
-  resetTokenExpiry: Date,
-}, { timestamps: true });
+  tenantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'School',
+    required: true
+  }
+}, {
+  timestamps: true
+});
 
 module.exports = mongoose.model('Student', studentSchema);

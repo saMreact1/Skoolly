@@ -29,6 +29,6 @@ export class ClassService {
 
   // 🔹 Get classes by school name (public route)
     getClassesByTenant(tenantId: string): Observable<any> {
-        return this.http.get(`${this.apiUrl}/tenant/${tenantId}`);
+        return this.http.get(`${this.apiUrl}/school/${tenantId}`);
     }
 }

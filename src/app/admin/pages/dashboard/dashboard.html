@@ -1,21 +1,21 @@
-<section class="overview" *ngIf="overview">
-    <app-overview-card
-        title="Total Students"
-        icon="school"
-        [value]="overview?.totalStudents"
-    ></app-overview-card>
+<section class="overview">
+  <app-overview-card
+    title="Total Students"
+    icon="school"
+    [value]="totalStudents"
+  ></app-overview-card>
 
-    <app-overview-card
-        title="Total Teachers"
-        icon="group"
-        [value]="overview?.totalTeachers"
-    ></app-overview-card>
+  <app-overview-card
+    title="Total Teachers"
+    icon="group"
+    [value]="totalTeachers"
+  ></app-overview-card>
 
-    <app-overview-card
-        title="Attendance Today"
-        icon="event_available"
-        [value]="overview?.attendanceToday"
-    ></app-overview-card>
+  <app-overview-card
+    title="Attendance Today"
+    icon="event_available"
+    [value]="attendanceToday"
+  >%</app-overview-card>
 </section>
 
 <section class="chart-grid">

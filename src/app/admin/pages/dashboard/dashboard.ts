@@ -14,13 +14,15 @@ import { AdminService } from '../../../core/services/admin.service';
     ChartWidget,
     OverviewCard,
     NoticeBoard,
-    NgIf
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
 export class Dashboard implements OnInit {
   overview: AdminOverview | any;
+  totalStudents = 0;
+  totalTeachers = 0;
+  attendanceToday = 0;
 
   attendanceData = {
     series: [
@@ -37,27 +39,34 @@ export class Dashboard implements OnInit {
     labels: ['Students', 'Teachers']
   };
 
-  classData = {
-    series: [
-      {
-        name: 'No. of Students',
-        data: [5, 10, 25, 30, 22, 27, 18]
-      }
-    ],
-    categories: ['Nur 1', 'Nur 2', 'Pry 1', 'Pry 2', 'Pry 3', 'Pry 4', 'Pry 5']
-  }
+  classData: any;
 
   constructor(
     private admin: AdminService
   ) {}
 
   ngOnInit(): void {
-      this.admin.getOverview().subscribe({
-        next: (res) => {
-          console.log('Dashboard data:', res);
-          this.overview = res;
-        },
-        error: (err) => console.error('Error loading overview', err)
-      })
+    this.admin.getOverview().subscribe({
+      next: (data) => {
+        this.totalStudents = data.totalStudents;
+        this.totalTeachers = data.totalTeachers;
+        this.attendanceToday = data.attendanceToday;
+      },
+      error: (err) => {
+        console.error('Error fetching overview', err);
+      }
+    })
+
+    this.admin.getClassCount().subscribe((res) => {
+      this.classData = {
+        series: [
+          {
+            name: 'Students',
+            data: res.map((item: any) => item.count)  
+          }
+        ],
+        categories: res.map((item: any, index: number) => `Item ${index + 1}`)
+      }
+    })
   }
 }
