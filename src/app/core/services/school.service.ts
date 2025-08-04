@@ -11,4 +11,8 @@ export class SchoolService {
     getSchoolByName(name: string): Observable<any> {
         return this.http.get(`${this.apiUrl}/name/${name}`);
     }
+
+    getProfile(): Observable<any> {
+        return this.http.get(`${this.apiUrl}/profile`);
+    }
 }

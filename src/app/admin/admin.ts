@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { SchoolService } from '../core/services/school.service';
 
 @Component({
   selector: 'app-admin',
@@ -7,13 +8,30 @@ import { Router } from '@angular/router';
   templateUrl: './admin.html',
   styleUrl: './admin.scss'
 })
-export class Admin {
+export class Admin implements OnInit {
+  backendUrl = 'http://localhost:5000/uploads/logos';
+
   collapsed: boolean = false;
   user: any;
+  schoolName = '';
+  schoolLogo = '';
 
   constructor(
-    private router: Router
+    private router: Router,
+    private school: SchoolService
   ) {}
+
+  ngOnInit(): void {
+    this.school.getProfile().subscribe({
+      next: (profile) => {
+        this.schoolName = profile.name;
+        this.schoolLogo = `${this.backendUrl}/${profile.logo}`;
+      },
+      error: (err) => {
+        console.log('Failed to load profile', err);
+      }
+    })
+  }
 
   toggleSidebar() {
     this.collapsed = !this.collapsed

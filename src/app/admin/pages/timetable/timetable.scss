@@ -1,0 +1,125 @@
+mat-card {
+  padding: 2rem;
+  border-radius: 1rem;
+
+  h2 {
+    margin-bottom: 1.5rem;
+  }
+
+  .class-selector {
+    width: 300px;
+    margin-bottom: 1.5rem;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    .period-controls,
+    .export-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+  }
+
+  .timetable-scroll-container {
+    overflow-x: auto;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+
+    .timetable-grid {
+      min-width: 650px;
+    //   min-width: fit-content;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .grid-row {
+        display: grid;
+        grid-template-columns: 150px repeat(10, 120px);
+      }
+
+      .cell {
+        padding: 0.75rem;
+        border: 1px solid #e0e0e0;
+        text-align: center;
+        background: #fafafa;
+        font-size: 0.95rem;
+        word-break: break-word;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: background 0.2s;
+      }
+
+      .header-cell {
+        font-size: 1rem;
+        font-weight: 600;
+        background: #f7f7f7;
+      }
+
+      .editable {
+        cursor: pointer;
+
+        &:hover {
+          background: #f0f9ff;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  mat-card {
+    padding: 1.5rem;
+
+    .class-selector {
+      width: 100%;
+    }
+
+    .controls {
+      flex-direction: column;
+
+      .period-controls,
+      .export-controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    .timetable-scroll-container {
+      overflow-x: auto;
+    }
+
+    .timetable-grid {
+      .grid-row {
+        grid-template-columns: 100px repeat(auto-fit, minmax(100px, 1fr));
+      }
+
+      .cell {
+        font-size: 0.85rem;
+        padding: 0.5rem;
+      }
+
+      .header-cell {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+:host {
+  font-size: 1rem;
+
+  @media (max-width: 600px) {
+    font-size: 0.9rem;
+  }
+}

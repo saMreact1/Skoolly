@@ -17,4 +17,16 @@ export class AdminService {
   getClassCount(): Observable<any> {
     return this.http.get(`${this.baseUrl}/class-count`);
   }
+
+  getStudentsByClass(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/students-by-class`);
+  }
+
+  getGenderDistribution(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/gender-distribution`);
+  }
+
+  // getWeeklyAttendance() {
+  //   return this.http.get<{ labels: string[], data: number[] }>('/stats/weekly-attendance');
+  // }
 }

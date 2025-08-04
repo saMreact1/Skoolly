@@ -1,12 +1,7 @@
-.chart-card {
-  background: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-  transition: 0.3s ease;
-  margin-bottom: 1rem;
-
-  &:hover {
-    box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+.chart-widget {
+  width: 100%;
+  max-width: 100%;
+  canvas {
+    max-height: 300px;
   }
 }

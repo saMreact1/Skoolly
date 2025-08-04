@@ -6,6 +6,9 @@ import { OverviewCard } from '../../components/widgets/overview-card/overview-ca
 import { NoticeBoard } from '../../components/widgets/notice-board/notice-board';
 import { AdminOverview } from '../../../core/models/overview.model';
 import { AdminService } from '../../../core/services/admin.service';
+import { ChartType } from 'ng-apexcharts';
+import { NgChartsModule } from 'ng2-charts';
+import { ChartData, ChartOptions } from 'chart.js';
 
 @Component({
   selector: 'app-dashboard',
@@ -14,32 +17,26 @@ import { AdminService } from '../../../core/services/admin.service';
     ChartWidget,
     OverviewCard,
     NoticeBoard,
+    NgChartsModule
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
 export class Dashboard implements OnInit {
+  classLabels: string[] = [];
+  classData: number[] = [];
+
+  genderLabels: string[] = [];
+  genderData: number[] = [];
+
+  attendanceLabels: string[] = [];
+  attendanceData: number[] = [];
+
+
   overview: AdminOverview | any;
   totalStudents = 0;
   totalTeachers = 0;
   attendanceToday = 0;
-
-  attendanceData = {
-    series: [
-      {
-        name: 'Attendance %',
-        data: [80, 85, 78, 90, 88, 92, 86]
-      }
-    ],
-    categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-  };
-
-  populationData = {
-    series: [120, 15],
-    labels: ['Students', 'Teachers']
-  };
-
-  classData: any;
 
   constructor(
     private admin: AdminService
@@ -57,16 +54,29 @@ export class Dashboard implements OnInit {
       }
     })
 
-    this.admin.getClassCount().subscribe((res) => {
-      this.classData = {
-        series: [
-          {
-            name: 'Students',
-            data: res.map((item: any) => item.count)  
-          }
-        ],
-        categories: res.map((item: any, index: number) => `Item ${index + 1}`)
-      }
-    })
+    this.loadStudentsByClass();
+    this.loadGenderDistribution();
+    // this.loadWeeklyAttendance();
   }
+
+  loadStudentsByClass() {
+    this.admin.getStudentsByClass().subscribe(res => {
+      this.classLabels = res.labels;
+      this.classData = res.data;
+    });
+  }
+
+  loadGenderDistribution() {
+    this.admin.getGenderDistribution().subscribe(res => {
+      this.genderLabels = res.labels;
+      this.genderData = res.data;
+    });
+  }
+
+  // loadWeeklyAttendance() {
+  //   this.admin.getWeeklyAttendance().subscribe(res => {
+  //     this.attendanceLabels = res.labels;
+  //     this.attendanceData = res.data;
+  //   });
+  // }
 }

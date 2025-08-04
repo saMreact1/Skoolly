@@ -3,6 +3,15 @@ import { RouterModule, Routes } from '@angular/router';
 import { Admin } from './admin';
 import { AdminGuard } from '../core/guards/admin.guard';
 import { Dashboard } from './pages/dashboard/dashboard';
+import { Teachers } from './pages/teachers/teachers';
+import { Students } from './pages/students/students';
+import { Notices } from './pages/notices/notices';
+import { Classes } from './pages/classes/classes';
+import { Timetable } from './pages/timetable/timetable';
+import { Subjects } from './pages/subjects/subjects';
+import { Results } from './pages/results/results';
+import { Invoices } from './pages/invoices/invoices';
+import { Transactions } from './pages/transactions/transactions';
 
 const routes: Routes = [
   {
@@ -11,9 +20,15 @@ const routes: Routes = [
     canActivate: [AdminGuard],
     children: [
       { path: '', component: Dashboard },
-      // { path: 'students', loadChildren: () => import('../students/students.module').then(m => m.StudentsModule) },
-      // { path: 'teachers', loadChildren: () => import('../teachers/teachers.module').then(m => m.TeachersModule) },
-      // { path: 'classes', loadChildren: () => import('../classes/classes.module').then(m => m.ClassesModule) },
+      { path: 'teachers', component: Teachers },
+      { path: 'students', component: Students },
+      { path: 'notices', component: Notices },
+      { path: 'classes', component: Classes },
+      { path: 'timetable', component: Timetable },
+      { path: 'subjects', component: Subjects },
+      { path: 'results', component: Results },
+      { path: 'payments', component: Invoices },
+      { path: 'receipts', component: Transactions },
     ]
   }
 ];

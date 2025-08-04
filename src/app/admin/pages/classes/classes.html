@@ -1,0 +1,50 @@
+<mat-card>
+    <div class="header">
+        <h2>📚 Class Management</h2>
+        <button mat-flat-button color="primary" (click)="openAddClassModal()">+ Add Class</button>
+    </div>
+
+    <mat-table [dataSource]="classes" class="class-table">
+        <ng-container matColumnDef="level">
+            <mat-header-cell *matHeaderCellDef> Class Level </mat-header-cell>
+            <mat-cell *matCellDef="let cls"> {{ cls.level }} </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="students">
+            <mat-header-cell *matHeaderCellDef> Students </mat-header-cell>
+            <mat-cell *matCellDef="let cls">
+                {{ cls.students.length }}
+            </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="teacher">
+            <mat-header-cell *matHeaderCellDef> Assigned Teacher </mat-header-cell>
+            <mat-cell *matCellDef="let cls; let i = index">
+                <ng-container *ngIf="editingIndex === i; else viewMode">
+                <mat-form-field appearance="outline" class="inline-form-field">
+                    <mat-select [(ngModel)]="cls.teacher" (selectionChange)="updateTeacher(i, cls.teacher)">
+                        <mat-option *ngFor="let teacher of availableTeachers" [value]="teacher">
+                            {{ teacher }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+                </ng-container>
+
+                <ng-template #viewMode>
+                    <span>{{ cls.teacher }}</span>
+                    <button mat-icon-button color="primary" (click)="editingIndex = i">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                </ng-template>
+            </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="['level', 'students', 'teacher']"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: ['level', 'students', 'teacher'];"></mat-row>
+    </mat-table>
+
+    <div *ngIf="classes.length === 0" class="empty-state">
+        <img src="../../../../assets/illustrations/empty-class.svg" alt="No classes" />
+        <p>No classes yet. Click the button above to add your first one.</p>
+    </div>
+</mat-card>

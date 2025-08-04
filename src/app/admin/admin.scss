@@ -26,10 +26,21 @@
         }
 
         .logo {
-            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             font-weight: bold;
-            text-align: center;
-            margin-bottom: 2rem;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: .7rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .logo-img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            border-radius: 50%;
         }
 
         nav a {

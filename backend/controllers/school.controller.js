@@ -23,16 +23,31 @@ exports.createSchool = async (req, res) => {
   }
 };
 
-exports.getSchool = async (req, res) => {
+// GET /school/profile
+exports.getSchoolProfile = async (req, res) => {
   try {
-    const school = await School.findOne({ tenantId: req.user.tenantId });
-    if (!school) return res.status(404).json({ message: 'School not found' });
+    const tenantId = req.user.tenantId; // pulled from decoded JWT
 
-    res.json(school);
+    const school = await School.findById(tenantId);
+
+    if (!school) {
+      return res.status(404).json({ message: 'School not found' });
+    }
+
+    res.json({
+      name: school.name,
+      logo: school.logo,
+      email: school.schoolEmail,
+      phone: school.schoolPhone,
+      address: school.address,
+      state: school.state
+    });
   } catch (err) {
+    console.error('School profile error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // GET /schools/name/:name
 exports.getSchoolByName = async (req, res) => {

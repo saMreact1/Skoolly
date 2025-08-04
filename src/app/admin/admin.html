@@ -1,6 +1,10 @@
 <div class="dashboard-layout">
     <aside [class.collapsed]="collapsed" class="sidebar">
-        <div class="logo">🏫 <span>SkooLLy</span></div>
+        <div class="logo">
+            <img *ngIf="schoolLogo" [src]="schoolLogo" alt="Logo" class="logo-img">
+            <span>{{ schoolName }}</span>
+        </div>
+
         <nav>
             <a mat-button routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
                 <mat-icon>dashboard</mat-icon> 
@@ -65,7 +69,7 @@
             
             <div class="right">
                 <mat-icon class="notify">notifications</mat-icon>
-                <img class="avatar" [src]="'../../../../assets/images/profile_picture.png'" alt="User" [matMenuTriggerFor]="userMenu">
+                <img class="avatar" [src]="'../../assets/images/profile_picture.png'" alt="User" [matMenuTriggerFor]="userMenu">
 
                 <mat-menu #userMenu="matMenu">
                     <button mat-menu-item (click)="goToSettings()">

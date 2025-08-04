@@ -14,6 +14,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from '../core/interceptors/auth.interceptor';
+import { NgChartsModule } from 'ng2-charts';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 
 @NgModule({
@@ -30,8 +32,10 @@ import { AuthInterceptor } from '../core/interceptors/auth.interceptor';
     MatIconModule,
     MatMenuModule,
     MatMenuTrigger,
+    NgChartsModule
   ],
   providers: [
+    provideNativeDateAdapter(),
     provideBrowserGlobalErrorListeners(),
     {
       provide: HTTP_INTERCEPTORS,
