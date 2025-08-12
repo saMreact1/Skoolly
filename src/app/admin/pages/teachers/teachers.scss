@@ -2,52 +2,111 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap; /* allows wrapping on smaller screens */
+  gap: 0.5rem;
 
-  h2 {
-    font-size: 1.5rem;
-    margin: 0;
+  mat-form-field {
+    margin-top: 1rem;
   }
+}
 
-  button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+.teachers-header h2 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.teachers-header button {
+  white-space: nowrap;
 }
 
 .teachers-table {
-  mat-form-field {
-    width: 100%;
-    margin-bottom: 1rem;
-  }
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
-  table {
-    width: 100%;
-    border-radius: 12px;
-    overflow: hidden;
-  }
+/* Search field */
+.teachers-table mat-form-field {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 1rem;
+}
+
+/* Table responsiveness */
+.teachers-table table {
+  width: 100%;
+  border-spacing: 0;
+  min-width: 600px;
 
   th {
-    background: #f0f0f0;
+    font-weight: 600;
+    background: #f5f7fa;
+    white-space: nowrap;
   }
 
   td, th {
-    padding: 1rem;
+    padding: 0.75rem;
+    text-align: left;
+  }
+
+  tr {
+    transition: background 0.2s ease;
+    &:hover {
+      background: #f0f4ff;
+    }
   }
 }
 
-.empty-state {
-  text-align: center;
-  margin-top: 2rem;
+// .teachers-table .mat-header-cell,
+// .teachers-table .mat-cell {
+//   padding: 0.75rem;
+//   text-align: left;
+//   white-space: nowrap;
+// }
 
-  img {
-    width: 200px;
-    margin-bottom: 1rem;
+/* Empty state */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.empty-state img {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #666;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .teachers-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  p {
-    font-weight: 500;
-    color: #666;
+  .teachers-table mat-form-field {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .teachers-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .teachers-table table {
+    min-width: 500px;
+  }
+
+  .empty-state img {
+    max-width: 180px;
   }
 }

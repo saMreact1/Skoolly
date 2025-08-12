@@ -1,40 +1,32 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { Notice } from '../models/notice.model';
+import { BehaviorSubject, Observable } from 'rxjs';
 
-export interface Notice {
-  title: string;
-  description: string;
-  tag: 'Urgent' | 'Event' | 'Reminder';
-  date: string;
-}
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class NoticeService {
-    private notices: Notice[] = [];
+  private baseUrl = 'http://localhost:5000/notices';
 
-    private noticesSubject = new BehaviorSubject<Notice[]>(this.notices);
-    notices$ = this.noticesSubject.asObservable();
+  private noticesSubject = new BehaviorSubject<Notice[]>([]);
+  public notices$ = this.noticesSubject.asObservable();
 
-    constructor() {}
+  constructor(private http: HttpClient) {}
 
-    getNotices() {
-        return this.noticesSubject.value;
-    }
+  getNotice() {
+    return this.http.get<Notice[]>(this.baseUrl).subscribe((data) => {
+        this.noticesSubject.next(data)
+    });
+  }
 
-    addNotice(notice: Notice) {
-        this.notices.unshift(notice);
-        this.noticesSubject.next(this.notices);
-    }
+  createNotice(notice: Partial<Notice>): Observable<Notice> {
+    return this.http.post<Notice>(this.baseUrl, notice);
+  }
 
-    updateNotice(index: number, notice: Notice) {
-        this.notices[index] = notice;
-        this.noticesSubject.next(this.notices);
-    }
+  deleteNotice(id: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/${id}`);
+  }
 
-    deleteNotice(index: number) {
-        this.notices.splice(index, 1);
-        this.noticesSubject.next(this.notices);
-    }
+  updateNotice(id: string, updated: Partial<Notice>): Observable<Notice> {
+    return this.http.put<Notice>(`${this.baseUrl}/${id}`, updated);
+  }
 }

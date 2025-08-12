@@ -1,5 +1,5 @@
 import { NgModule, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgFor } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminRoutingModule } from './admin-routing-module';
 
@@ -32,7 +32,8 @@ import { provideNativeDateAdapter } from '@angular/material/core';
     MatIconModule,
     MatMenuModule,
     MatMenuTrigger,
-    NgChartsModule
+    NgChartsModule,
+    NgFor
   ],
   providers: [
     provideNativeDateAdapter(),

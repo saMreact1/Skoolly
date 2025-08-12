@@ -13,6 +13,7 @@ import { MatStepperModule } from '@angular/material/stepper';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-auth',
@@ -30,7 +31,8 @@ import { MatIconModule } from '@angular/material/icon';
     NgIf,
     NgFor,
     MatIconModule,
-    RouterModule
+    RouterModule,
+    MatDatepickerModule
   ],
   templateUrl: './auth.html',
   styleUrl: './auth.scss'
@@ -40,6 +42,7 @@ export class Auth implements OnInit {
   isLinear: boolean = true;
   step: number = 0;
   selectedLogoFile: File | null = null;
+  selectedProfilePicFile: File | null = null;
   availableClasses: any[] = [];
   tenantId: string = '';
 
@@ -88,6 +91,8 @@ export class Auth implements OnInit {
       password: ['', [Validators.required, Validators.minLength(7)]],
       confirmPassword: ['', Validators.required],
       classId: [''],
+      dob: ['', Validators.required],
+      profilePic: ['']
     }, { validators: this.matchPasswords('password', 'confirmPassword') });
 
     this.personalInfoForm.get('role')?.valueChanges.subscribe(role => {
@@ -226,7 +231,9 @@ export class Auth implements OnInit {
       role: this.personalInfoForm.value.role,
       password: this.personalInfoForm.value.password,
       confirmPassword: this.personalInfoForm.value.confirmPassword,
-      classId: this.personalInfoForm.value.classId
+      classId: this.personalInfoForm.value.classId,
+      dob: this.personalInfoForm.value.dob,
+      profilePic: this.personalInfoForm.value.profilePic
     }));
 
     this.auth.register(formData).subscribe({
@@ -253,6 +260,7 @@ export class Auth implements OnInit {
     this.schoolInfoForm.reset();
     this.personalInfoForm.reset();
     this.selectedLogoFile = null;
+    this.selectedProfilePicFile = null;
     this.tenantId = '';
     this.emailExists = false;
     this.schoolExists = false;
@@ -266,6 +274,15 @@ export class Auth implements OnInit {
       this.selectedLogoFile = input.files[0];
 
       this.schoolInfoForm.get('logo')?.setValue(this.selectedLogoFile.name)
+    }
+  }
+
+  onPicSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedLogoFile = input.files[0];
+
+      this.personalInfoForm.get('profilePic')?.setValue(this.selectedProfilePicFile)
     }
   }
 }

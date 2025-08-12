@@ -1,6 +1,6 @@
 import { NgIf } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,6 +9,7 @@ import { ViewTeacherModal } from '../../components/modals/view-teacher-modal/vie
 import { AddTeacherModal } from '../../components/modals/add-teacher-modal/add-teacher-modal';
 import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
+import { TeacherService } from '../../../core/services/teacher.service';
 
 @Component({
   selector: 'app-teachers',
@@ -24,26 +25,38 @@ import { MatInputModule } from '@angular/material/input';
   templateUrl: './teachers.html',
   styleUrl: './teachers.scss'
 })
-export class Teachers {
+export class Teachers implements OnInit {
   searchTerm = '';
-
   columns: string[] = ['name', 'subject', 'email', 'actions'];
-
-  teachers = [
-    { name: 'Samuel Adeleke', subject: 'Math', email: 'sam@skoolly.com' },
-    { name: 'Iziren Adedoyin', subject: 'Biology', email: 'doyin@skoolly.com' },
-    { name: 'John Smith', subject: 'English', email: 'john@skoolly.com' }
-  ];
+  teachers: any[] = [];
 
   constructor(
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private teacher: TeacherService
   ) {}
+
+  ngOnInit(): void {
+    this.loadTeachers();
+  }
+
+  loadTeachers() {
+    this.teacher.getTeachers().subscribe({
+      next: (data) => {
+        this.teachers = data;
+      },
+      error: (err) => {
+        console.log('Failed to load teachers', err);
+        
+      }
+    })
+  }
 
   filteredTeachers() {
     if(!this.searchTerm) return this.teachers;
+    const term = this.searchTerm.toLowerCase();
     return this.teachers.filter(t => 
-      t.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      t.subject.toLowerCase().includes(this.searchTerm.toLowerCase())
+      t.name.toLowerCase().includes(term) ||
+      t.subject.toLowerCase().includes(term)
     );
   }
 

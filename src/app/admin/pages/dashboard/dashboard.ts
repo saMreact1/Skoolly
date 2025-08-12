@@ -1,4 +1,3 @@
-import { NgIf } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ChartWidget } from '../../components/widgets/chart-widget/chart-widget';
@@ -6,9 +5,9 @@ import { OverviewCard } from '../../components/widgets/overview-card/overview-ca
 import { NoticeBoard } from '../../components/widgets/notice-board/notice-board';
 import { AdminOverview } from '../../../core/models/overview.model';
 import { AdminService } from '../../../core/services/admin.service';
-import { ChartType } from 'ng-apexcharts';
 import { NgChartsModule } from 'ng2-charts';
-import { ChartData, ChartOptions } from 'chart.js';
+import { NoticeService } from '../../../core/services/notice.service';
+import { Notice } from '../../../core/models/notice.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,6 +31,8 @@ export class Dashboard implements OnInit {
   attendanceLabels: string[] = [];
   attendanceData: number[] = [];
 
+  notices: Notice[] = [];
+
 
   overview: AdminOverview | any;
   totalStudents = 0;
@@ -39,7 +40,8 @@ export class Dashboard implements OnInit {
   attendanceToday = 0;
 
   constructor(
-    private admin: AdminService
+    private admin: AdminService,
+    private notice: NoticeService
   ) {}
 
   ngOnInit(): void {
@@ -54,6 +56,7 @@ export class Dashboard implements OnInit {
       }
     })
 
+    this.loadNotices();
     this.loadStudentsByClass();
     this.loadGenderDistribution();
     // this.loadWeeklyAttendance();
@@ -71,6 +74,10 @@ export class Dashboard implements OnInit {
       this.genderLabels = res.labels;
       this.genderData = res.data;
     });
+  }
+
+  loadNotices() {
+    this.notice.getNotice()
   }
 
   // loadWeeklyAttendance() {

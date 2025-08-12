@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SchoolService } from '../core/services/school.service';
 
@@ -22,6 +22,7 @@ export class Admin implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.collapsed = window.innerWidth <= 768;
     this.school.getProfile().subscribe({
       next: (profile) => {
         this.schoolName = profile.name;

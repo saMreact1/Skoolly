@@ -102,6 +102,12 @@ exports.register = async (req, res) => {
       });
 
       await student.save({ session });
+
+      await Class.updateOne(
+        { _id: personalInfo.classId },
+        { $push: { students: `${personalInfo.firstName} ${personalInfo.lastName}` } },
+        { session }
+      );
     } else if (user.role === 'teacher') {
       const teacher = new Teacher({
         ...personalInfo,

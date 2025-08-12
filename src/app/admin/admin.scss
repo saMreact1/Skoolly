@@ -14,20 +14,21 @@
         transition: width .4s ease;
 
         &.collapsed {
-            width: 60px;
+            width: 70px;
 
             .logo span, nav a span {
                 display: none;
             }
 
             nav a mat-icon {
-                margin-right: 0 auto;
+                margin-right: 0;
             }
         }
 
         .logo {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
             font-weight: bold;
             font-size: 1.2rem;
@@ -48,10 +49,15 @@
             display: flex;
             align-items: center;
             padding: .8rem;
-            margin: .5rem 0;
+            margin: .5rem auto;
             border-radius: 8px;
             text-decoration: none;
             transition: background .3s ease;
+
+            &:nth-of-type(11) {
+                position: fixed;
+                bottom: 0;
+            }
 
             mat-icon {
                 margin-right: 1rem;
@@ -61,10 +67,6 @@
                 background: var(--primary-bg);
                 color: var(--primary-text);
             }
-        }
-        .profile {
-            position: absolute;
-            bottom: 2rem;
         }
     }
 

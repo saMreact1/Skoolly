@@ -12,16 +12,18 @@ const generateDefaultClasses = async (schoolTypes, schoolId, session) => {
   const defaultClasses = [];
 
   if (schoolTypes.includes('nursery')) {
-    defaultClasses.push({ name: 'Nursery 1', schoolId: schoolId });
-    defaultClasses.push({ name: 'Nursery 2', schoolId: schoolId });
+    defaultClasses.push({ name: 'KG 1', schoolId: schoolId });
+    defaultClasses.push({ name: 'KG 2', schoolId: schoolId });
+    defaultClasses.push({ name: 'Nur 1', schoolId: schoolId });
+    defaultClasses.push({ name: 'Nur 2', schoolId: schoolId });
   }
   if (schoolTypes.includes('primary')) {
-    defaultClasses.push({ name: 'Primary 1', schoolId: schoolId });
-    defaultClasses.push({ name: 'Primary 2', schoolId: schoolId });
-    defaultClasses.push({ name: 'Primary 3', schoolId: schoolId });
-    defaultClasses.push({ name: 'Primary 4', schoolId: schoolId });
-    defaultClasses.push({ name: 'Primary 5', schoolId: schoolId });
-    defaultClasses.push({ name: 'Primary 6', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 1', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 2', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 3', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 4', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 5', schoolId: schoolId });
+    defaultClasses.push({ name: 'Pry 6', schoolId: schoolId });
   }
   if (schoolTypes.includes('secondary')) {
     defaultClasses.push({ name: 'JSS 1', schoolId: schoolId });

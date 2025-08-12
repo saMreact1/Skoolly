@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
-import { Notice, NoticeService } from '../../../../core/services/notice.service';
+import { NoticeService } from '../../../../core/services/notice.service';
 import { DatePipe, NgFor } from '@angular/common';
+import { Notice } from '../../../../core/models/notice.model';
 
 @Component({
   selector: 'app-notice-board',
@@ -27,19 +28,4 @@ export class NoticeBoard {
       this.notices = data;
     });
   }
-
-  // addNotice() {
-  //   const dialogRef = this.dialog.open(CreateNoticeModalComponent, {
-  //     width: '400px'
-  //   });
-
-  //   dialogRef.afterClosed().subscribe((newNotice) => {
-  //     if (newNotice) {
-  //       this.notices.unshift({
-  //         ...newNotice,
-  //         date: new Date().toISOString()
-  //       });
-  //     }
-  //   });
-  // }
 }

@@ -4,6 +4,7 @@ const teacherSchema = new mongoose.Schema({
   fullName: {
     type: String,
     required: true,
+    trim: true
   },
   phone: String,
   gender: String,
@@ -14,6 +15,7 @@ const teacherSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
   },
   role: {
     type: String,
@@ -23,6 +25,12 @@ const teacherSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  classes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class"
+    }
+  ],
   password: {
     type: String,
     required: true,

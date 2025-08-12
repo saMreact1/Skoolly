@@ -11,9 +11,6 @@ export class AuthService {
   register(formData: FormData) {
     return this.http.post(`${this.apiUrl}/register`, formData);
   }
-  // register(data: any) {
-  //   return this.http.post(`${this.apiUrl}/register`, data);
-  // }
 
   login(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, data).pipe(
@@ -46,6 +43,11 @@ export class AuthService {
 
   getUser() {
     return JSON.parse(localStorage.getItem('user')!);
+  }
+
+  getTenantId(): string | null {
+    const user = this.getUser();
+    return user?.tenantId || null;
   }
 
   logout() {

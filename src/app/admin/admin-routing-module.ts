@@ -12,6 +12,7 @@ import { Subjects } from './pages/subjects/subjects';
 import { Results } from './pages/results/results';
 import { Invoices } from './pages/invoices/invoices';
 import { Transactions } from './pages/transactions/transactions';
+import { Profile } from './pages/profile/profile';
 
 const routes: Routes = [
   {
@@ -29,6 +30,7 @@ const routes: Routes = [
       { path: 'results', component: Results },
       { path: 'payments', component: Invoices },
       { path: 'receipts', component: Transactions },
+      { path: 'profile', component: Profile },
     ]
   }
 ];

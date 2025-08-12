@@ -12,6 +12,10 @@ import { App } from './app';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
+import { Loader } from './shared/loader/loader';
+import { LoaderInterceptor } from './core/interceptors/loader.interceptor';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @NgModule({
   declarations: [
@@ -25,12 +29,20 @@ import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common
     MatButtonModule,
     MatIconModule,
     Auth,
+    Loader,
+    MatNativeDateModule,
+    MatDatepickerModule,
   ],
   providers: [
     provideBrowserGlobalErrorListeners(),
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: LoaderInterceptor,
       multi: true
     }
   ],

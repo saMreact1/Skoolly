@@ -1,50 +1,54 @@
-<mat-card>
-    <div class="header">
-        <h2>📚 Class Management</h2>
-        <button mat-flat-button color="primary" (click)="openAddClassModal()">+ Add Class</button>
-    </div>
+<mat-card class="classes-container">
+  <!-- Header -->
+  <div class="header">
+    <h2>📚 Class Management</h2>
+    <button mat-flat-button color="primary" (click)="openAddClassModal()">
+      + Add Class
+    </button>
+  </div>
 
-    <mat-table [dataSource]="classes" class="class-table">
-        <ng-container matColumnDef="level">
-            <mat-header-cell *matHeaderCellDef> Class Level </mat-header-cell>
-            <mat-cell *matCellDef="let cls"> {{ cls.level }} </mat-cell>
-        </ng-container>
+  <!-- Table -->
+  <div class="table-wrapper">
+    <table mat-table [dataSource]="classes" class="mat-elevation-z2">
 
-        <ng-container matColumnDef="students">
-            <mat-header-cell *matHeaderCellDef> Students </mat-header-cell>
-            <mat-cell *matCellDef="let cls">
-                {{ cls.students.length }}
-            </mat-cell>
-        </ng-container>
+      <!-- Class Name -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Class Name </th>
+        <td mat-cell *matCellDef="let c" data-label="Class Name"> {{ c.name }} </td>
+      </ng-container>
 
-        <ng-container matColumnDef="teacher">
-            <mat-header-cell *matHeaderCellDef> Assigned Teacher </mat-header-cell>
-            <mat-cell *matCellDef="let cls; let i = index">
-                <ng-container *ngIf="editingIndex === i; else viewMode">
-                <mat-form-field appearance="outline" class="inline-form-field">
-                    <mat-select [(ngModel)]="cls.teacher" (selectionChange)="updateTeacher(i, cls.teacher)">
-                        <mat-option *ngFor="let teacher of availableTeachers" [value]="teacher">
-                            {{ teacher }}
-                        </mat-option>
-                    </mat-select>
-                </mat-form-field>
-                </ng-container>
+      <!-- Teacher -->
+      <ng-container matColumnDef="teacher">
+        <th mat-header-cell *matHeaderCellDef> Teacher </th>
+        <td mat-cell *matCellDef="let c" data-label="Teacher">
+          <span class="badge teacher">{{ teachersMap[c.assignedTeacher] || 'Unassigned' }}</span>
+        </td>
+      </ng-container>
 
-                <ng-template #viewMode>
-                    <span>{{ cls.teacher }}</span>
-                    <button mat-icon-button color="primary" (click)="editingIndex = i">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                </ng-template>
-            </mat-cell>
-        </ng-container>
+      <!-- Students -->
+      <ng-container matColumnDef="students" data-label="Students">
+        <th mat-header-cell *matHeaderCellDef> Students </th>
+        <td mat-cell *matCellDef="let c">
+          <span class="badge students">{{ c.students?.length || 0 }}</span>
+        </td>
+      </ng-container>
 
-        <mat-header-row *matHeaderRowDef="['level', 'students', 'teacher']"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: ['level', 'students', 'teacher'];"></mat-row>
-    </mat-table>
+      <!-- Actions -->
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let c" data-label="Actions">
+          <button mat-icon-button color="accent" (click)="openAssignTeacherDialog(c)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button color="warn" (click)="confirmDeleteClass(c._id)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-    <div *ngIf="classes.length === 0" class="empty-state">
-        <img src="../../../../assets/illustrations/empty-class.svg" alt="No classes" />
-        <p>No classes yet. Click the button above to add your first one.</p>
-    </div>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+    </table>
+  </div>
 </mat-card>

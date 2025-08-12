@@ -14,20 +14,22 @@
             />
             <textarea
                 class="notice-description"
-                [(ngModel)]="notice.description"
+                [(ngModel)]="notice.content"
                 (blur)="onNoticeUpdated(i)"
                 placeholder="Add description..."
             ></textarea>
             <div class="meta">
-                <span class="notice-tag" [ngClass]="notice.tag.toLowerCase()">{{ notice.tag }}</span>
-                <span class="notice-date">{{ notice.date | date: 'mediumDate' }}</span>
-            </div>
-            </div>
+                <div>
+                    <span class="notice-tag" [ngClass]="notice.tag">{{ notice.tag }}</span>
+                    <span class="notice-date">{{ notice.date | date: 'mediumDate' }}</span>
+                </div>
 
-            <div class="notice-actions">
-            <button mat-icon-button color="warn" (click)="confirmDeleteNotice(i)">
-                <mat-icon>delete</mat-icon>
-            </button>
+                <div class="notice-actions">
+                    <button mat-icon-button color="warn" (click)="confirmDeleteNotice(notice._id)">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
