@@ -5,10 +5,11 @@
   margin-bottom: 1rem;
   flex-wrap: wrap; /* allows wrapping on smaller screens */
   gap: 0.5rem;
+}
 
-  mat-form-field {
-    margin-top: 1rem;
-  }
+mat-form-field {
+  width: 40%;
+  margin: 1rem auto;
 }
 
 .teachers-header h2 {
@@ -49,6 +50,10 @@
     text-align: left;
   }
 
+  .actions {
+    padding: .75rem 0 !important;
+  }
+
   tr {
     transition: background 0.2s ease;
     &:hover {
@@ -56,13 +61,6 @@
     }
   }
 }
-
-// .teachers-table .mat-header-cell,
-// .teachers-table .mat-cell {
-//   padding: 0.75rem;
-//   text-align: left;
-//   white-space: nowrap;
-// }
 
 /* Empty state */
 .empty-state {
@@ -88,16 +86,24 @@
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .teachers-header {
-    flex-direction: column;
     align-items: flex-start;
   }
 
-  .teachers-table mat-form-field {
-    max-width: 100%;
+  mat-form-field {
+    width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .teachers-header {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+  }
+
   .teachers-header h2 {
     font-size: 1.3rem;
   }

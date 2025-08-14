@@ -27,7 +27,7 @@ import { TeacherService } from '../../../core/services/teacher.service';
 })
 export class Teachers implements OnInit {
   searchTerm = '';
-  columns: string[] = ['name', 'subject', 'email', 'actions'];
+  columns: string[] = ['name', 'email', 'actions'];
   teachers: any[] = [];
 
   constructor(

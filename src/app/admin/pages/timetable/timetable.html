@@ -4,7 +4,7 @@
   <mat-form-field appearance="fill" class="class-selector">
     <mat-label>Select Class</mat-label>
     <mat-select [(value)]="selectedClass">
-      <mat-option *ngFor="let cls of classes" [value]="cls">{{ cls }}</mat-option>
+      <mat-option *ngFor="let cls of classes" [value]="cls">{{ cls.name }}</mat-option>
     </mat-select>
   </mat-form-field>
 

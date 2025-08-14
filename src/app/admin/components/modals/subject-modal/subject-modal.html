@@ -1,1 +1,48 @@
-<p>subject-modal works!</p>
+<h2 mat-dialog-title>
+  {{ data?._id ? 'Edit Subject' : 'Add Subject' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="subject-form">
+    
+    <!-- Subject Name -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Subject Name</mat-label>
+      <input matInput placeholder="e.g. Mathematics" formControlName="name" />
+      <mat-error *ngIf="form.get('name')?.hasError('required')">
+        Subject name is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Class -->
+    <mat-form-field appearance="fill" class="full-width">
+      <mat-label>Class</mat-label>
+      <mat-select formControlName="class">
+        <mat-option *ngFor="let cls of classes" [value]="cls._id">
+          {{ cls.name }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.get('class')?.hasError('required')">
+        Class is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Teacher -->
+    <mat-form-field appearance="fill" style="width: 100%;">
+        <mat-label>Select Teacher</mat-label>
+        <mat-select formControlName="teacher">
+          <mat-option *ngFor="let teacher of teachers" [value]="teacher._id">
+            {{ teacher.fullName }}
+          </mat-option>
+        </mat-select>
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="close()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="save()" [disabled]="form.invalid">
+    {{ data?._id ? 'Update' : 'Save' }}
+  </button>
+</mat-dialog-actions>

@@ -81,13 +81,13 @@ export class Classes implements OnInit {
   }
 
   loadTeachers() {
-  this.teacher.getTeachers().subscribe((teachers: any[]) => {
-    this.teachersMap = {};
-    teachers.forEach(t => {
-      this.teachersMap[t._id] = `${t.fullName}`;
+    this.teacher.getTeachers().subscribe((teachers: any[]) => {
+      this.teachersMap = {};
+      teachers.forEach(t => {
+        this.teachersMap[t._id] = `${t.fullName}`;
+      });
     });
-  });
-}
+  }
 
   onAssignTeacher(classId: string, teacherId: string) {
     console.log('Sending to backend:', { classId, teacherId });

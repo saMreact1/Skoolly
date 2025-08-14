@@ -17,7 +17,7 @@ app.use('/students', require('./routes/student.routes'));
 app.use('/schools', require('./routes/school.routes'));
 app.use('/classes', require('./routes/class.routes'));
 app.use('/notices', require('./routes/notice.routes'));
-app.use('/sessions', require('./routes/session.routes'));
+app.use('/subjects', require('./routes/subject.routes'));
 app.use('/terms', require('./routes/term.routes'));
 
 

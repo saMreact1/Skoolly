@@ -1,5 +1,5 @@
 import { NgFor } from '@angular/common';
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,8 +9,11 @@ import { MatSelectModule } from '@angular/material/select';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
-import * as FileSaver from 'file-saver';
+import { saveAs } from 'file-saver';
 import { TimetableModal } from '../../components/modals/timetable-modal/timetable-modal';
+import { ClassService } from '../../../core/services/class.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-timetable',
@@ -25,18 +28,46 @@ import { TimetableModal } from '../../components/modals/timetable-modal/timetabl
   templateUrl: './timetable.html',
   styleUrl: './timetable.scss'
 })
-export class Timetable {
-  @ViewChild('timetableGrid', { static: false}) timetableGrid!: ElementRef;
+export class Timetable implements OnInit {
+  @ViewChild('timetableGrid', { static: false }) timetableGrid!: ElementRef;
 
   selectedClass = 'JSS 1';
-  classes = ['JSS 1', 'JSS 2', 'SSS 1', 'SSS 2'];
+  classes: any[] = [];
   days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   periods: string[] = Array.from({ length: 5 }, (_, i) => `${i + 1}`);
 
-
   timetable: { [key: string]: string } = {};
 
-  constructor(private dialog: MatDialog) {}
+  constructor(
+    private dialog: MatDialog,
+    private classService: ClassService,
+    private auth: AuthService,
+    private snack: MatSnackBar
+  ) {}
+
+  ngOnInit(): void {
+    this.loadClasses();
+  }
+
+  loadClasses() {
+    const tenantId = this.auth.getTenantId();
+    if (!tenantId) {
+      console.warn('Tenant ID is missing. Cannot load classes.');
+      return;
+    }
+
+    this.classService.getClassesByTenant(tenantId).subscribe({
+      next: (data) => {
+        this.classes = data;
+      },
+      error: () => {
+        this.snack.open('Could not fetch classes for this school.', '', {
+          duration: 3000,
+          panelClass: ['white-bg-snack']
+        });
+      }
+    });
+  }
 
   addPeriod() {
     const nextPeriod = `${this.periods.length + 1}`;
@@ -50,7 +81,7 @@ export class Timetable {
   }
 
   editCell(day: string, period: string) {
-    const key = day + '_' + period;
+    const key = `${day}_${period}`;
     const currentValue = this.timetable[key];
 
     const dialogRef = this.dialog.open(TimetableModal, {
@@ -71,37 +102,32 @@ export class Timetable {
     return { subject, teacher };
   }
 
-  exportToPDF() {
-    html2canvas(this.timetableGrid.nativeElement).then(canvas => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('landscape', 'mm', 'a4');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+  async exportToPDF() {
+    const canvas = await html2canvas(this.timetableGrid.nativeElement);
+    const imgData = canvas.toDataURL('image/png');
 
-      pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-      pdf.save(`${this.selectedClass}-timetable.pdf`);
-    });
+    const pdf = new jsPDF('landscape', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
+    pdf.save(`${this.selectedClass}-timetable.pdf`);
   }
 
   exportToExcel() {
-    const rows = [];
-
-    const headerRow = ['Day / Period', ...this.periods];
-    rows.push(headerRow);
-
-    this.days.forEach(day => {
-      const row = [day];
-      this.periods.forEach(period => {
-        const key = day + '_' + period;
-        row.push(this.timetable[key] || '');
-      });
-      rows.push(row);
-    });
+    const rows = [
+      ['Day / Period', ...this.periods],
+      ...this.days.map(day => [
+        day,
+        ...this.periods.map(period => this.timetable[`${day}_${period}`] || '')
+      ])
+    ];
 
     const worksheet = XLSX.utils.aoa_to_sheet(rows);
     const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
     const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    FileSaver.saveAs(new Blob([excelBuffer]), `${this.selectedClass}-timetable.xlsx`);
+
+    saveAs(new Blob([excelBuffer]), `${this.selectedClass}-timetable.xlsx`);
   }
 }
