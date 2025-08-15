@@ -9,6 +9,9 @@ const School = require('../models/school.model');
 const bcrypt = require('bcryptjs');
 const { generateToken } = require('../utils/token');
 const generateDefaultClasses = require('../utils/generateClasses')
+const { generateDefaultSubjects } = require('../utils/generateSubjects');
+const Subject = require('../models/subject.model');
+
 
 exports.register = async (req, res) => {
   const session = await mongoose.startSession();
@@ -68,12 +71,21 @@ exports.register = async (req, res) => {
 
       await generateDefaultClasses(schoolInfo.schoolType, school._id, session);
 
+      await generateDefaultSubjects(schoolInfo.schoolType, school._id, session);
+
     } else {
       school = await School.findOne({ name: normalizedSchoolName }).session(session);
       if (!school) {
         await session.abortTransaction();
         session.endSession();
         return res.status(404).json({ message: 'School not found' });
+      }
+
+      // (Optional) Backfill subjects if the school has none yet
+      // This protects old tenants that existed before you added this feature.
+      const subjectCount = await Subject.countDocuments({ tenantId: school._id }).session(session);
+      if (subjectCount === 0 && schoolInfo?.schoolType) {
+        await generateDefaultSubjects(schoolInfo.schoolType, school._id, session);
       }
     }
 
