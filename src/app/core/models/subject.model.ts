@@ -3,4 +3,5 @@ export interface Subject {
   name: string;
   class: string;
   teacher: string;
+  color?: string;
 }

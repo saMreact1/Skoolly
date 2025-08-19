@@ -1,8 +1,8 @@
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
@@ -14,6 +14,15 @@ import { TimetableModal } from '../../components/modals/timetable-modal/timetabl
 import { ClassService } from '../../../core/services/class.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FormsModule } from '@angular/forms';
+import { TimetableService } from '../../../core/services/timetable.service';
+import { SubjectService } from '../../../core/services/subject.service';
+import { TimetableClass } from '../../../core/models/timetable.model';
+import { Subject } from '../../../core/models/subject.model';
+
+type Slot = { id?: string; subjectName: string; color: string; };
+type Grid = Record<string, Slot[]>;
+
 
 @Component({
   selector: 'app-timetable',
@@ -23,34 +32,82 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    NgFor
+    NgFor,
+    FormsModule,
+    NgIf,
+    MatDialogModule
   ],
   templateUrl: './timetable.html',
   styleUrl: './timetable.scss'
 })
 export class Timetable implements OnInit {
-  @ViewChild('timetableGrid', { static: false }) timetableGrid!: ElementRef;
-
-  selectedClass = 'JSS 1';
   classes: any[] = [];
-  days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  periods: string[] = Array.from({ length: 5 }, (_, i) => `${i + 1}`);
+  selectedClass: string = '';
+  timetables: { [classId: string]: { [slotId: string]: TimetableClass[] } } = {};
+  subjects: Subject[] = [];
 
-  timetable: { [key: string]: string } = {};
+  days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  times = ['8-9am', '9-10am', '10-11am', '11-12pm', '12-1pm', '1-2pm'];
+
+  grid: { [slotId: string]: TimetableClass[] } = {};
 
   constructor(
     private dialog: MatDialog,
     private classService: ClassService,
     private auth: AuthService,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private timetableService: TimetableService,
+    private subject: SubjectService
   ) {}
 
   ngOnInit(): void {
     this.loadClasses();
+    this.loadSubjects();
+  }
+
+  private ensureGridSkeleton() {
+    for (const d of this.days) {
+      for (const t of this.times) {
+        const k = this.key(d, t);
+        if (!this.grid[k]) this.grid[k] = [];
+      }
+    }
+  }
+
+  key(day: string, time: string) {
+    return `${day}-${time}`;
+  }
+
+  openSubjectSelector(day: string, time: string) {
+    const dialogRef = this.dialog.open(TimetableModal, {
+      width: '300px',
+      data: { subjects: this.subjects }
+    });
+
+    dialogRef.afterClosed().subscribe((selected: Subject | null) => {
+      if (selected) {
+        const timetableClass: TimetableClass = {
+          id: selected._id!,
+          subjectName: selected.name ?? 'Unnamed',
+          color: (selected as any).color ?? this.getRandomColor()
+        };
+
+        const key = this.key(day, time);
+        this.grid[key] = [timetableClass];
+
+        if (!this.timetables[this.selectedClass]) {
+          this.initTimetableForClass(this.selectedClass);
+        }
+        this.timetables[this.selectedClass][key] = [timetableClass];
+
+        this.saveTimetable();
+      }
+    });
   }
 
   loadClasses() {
     const tenantId = this.auth.getTenantId();
+    
     if (!tenantId) {
       console.warn('Tenant ID is missing. Cannot load classes.');
       return;
@@ -63,71 +120,66 @@ export class Timetable implements OnInit {
       error: () => {
         this.snack.open('Could not fetch classes for this school.', '', {
           duration: 3000,
-          panelClass: ['white-bg-snack']
         });
       }
     });
   }
 
-  addPeriod() {
-    const nextPeriod = `${this.periods.length + 1}`;
-    this.periods.push(nextPeriod);
+  loadSubjects() {
+    this.subject.getSubjects().subscribe((res: Subject[]) => {
+      this.subjects = res.map(s => ({
+        ...s,
+        color: this.getRandomColor()
+      }));
+    });
   }
 
-  removeLastPeriod() {
-    if (this.periods.length > 1) {
-      this.periods.pop();
+  getClasses(day: string, time: string) {
+    return this.grid[this.key(day, time)] || [];
+  }
+
+  onClassChange() {
+    if (!this.selectedClass) return;
+
+    if (this.timetables[this.selectedClass]) {
+      this.grid = { ...this.timetables[this.selectedClass] };
+      this.ensureGridSkeleton();
+      return;
     }
-  }
 
-  editCell(day: string, period: string) {
-    const key = `${day}_${period}`;
-    const currentValue = this.timetable[key];
-
-    const dialogRef = this.dialog.open(TimetableModal, {
-      width: '400px',
-      data: this.parseCellData(currentValue)
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.timetable[key] = `${result.subject} - ${result.teacher}`;
-      }
+    this.timetableService.getTimetable(this.selectedClass).subscribe({
+      next: (res: any) => {
+        const fetchedGrid = res.data || {};
+        this.timetables[this.selectedClass] = fetchedGrid;
+        this.grid = { ...fetchedGrid };
+        this.ensureGridSkeleton();
+      },
+      error: () => this.snack.open('Failed to load timetable.', '', { duration: 2500 })
     });
   }
 
-  parseCellData(value: string | undefined) {
-    if (!value) return {};
-    const [subject, teacher] = value.split(' - ');
-    return { subject, teacher };
+  saveTimetable() {
+    if (!this.selectedClass) {
+      this.snack.open('Select a class first', '', { duration: 2000 });
+      return;
+    }
+    this.timetableService.saveTimetable(this.selectedClass, this.grid).subscribe({
+      next: () => this.snack.open('Timetable saved.', '', { duration: 2000 }),
+      error: () => this.snack.open('Failed to save timetable.', '', { duration: 3000 })
+    });
   }
 
-  async exportToPDF() {
-    const canvas = await html2canvas(this.timetableGrid.nativeElement);
-    const imgData = canvas.toDataURL('image/png');
-
-    const pdf = new jsPDF('landscape', 'mm', 'a4');
-    const imgProps = pdf.getImageProperties(imgData);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-    pdf.addImage(imgData, 'PNG', 0, 10, pdfWidth, pdfHeight);
-    pdf.save(`${this.selectedClass}-timetable.pdf`);
+  private getRandomColor(): string {
+    const colors = ['#6c5ce7', '#00b894', '#0984e3', '#d63031', '#fdcb6e'];
+    return colors[Math.floor(Math.random() * colors.length)];
   }
 
-  exportToExcel() {
-    const rows = [
-      ['Day / Period', ...this.periods],
-      ...this.days.map(day => [
-        day,
-        ...this.periods.map(period => this.timetable[`${day}_${period}`] || '')
-      ])
-    ];
-
-    const worksheet = XLSX.utils.aoa_to_sheet(rows);
-    const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-    saveAs(new Blob([excelBuffer]), `${this.selectedClass}-timetable.xlsx`);
+  private initTimetableForClass(classId: string) {
+    this.timetables[classId] = {};
+    this.days.forEach(day => {
+      this.times.forEach(time => {
+        this.timetables[classId][`${day}-${time}`] = [];
+      });
+    });
   }
 }

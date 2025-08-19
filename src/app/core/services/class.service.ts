@@ -33,8 +33,16 @@ export class ClassService {
   }
 
 // 🔹 Get classes by school name (public route)
-  getClassesByTenant(tenantId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/school/${tenantId}`);
+  getClassesByTenant(tenantId: string): Observable<any[]> {
+    const token = localStorage.getItem('token');
+    return this.http.get<any[]>(
+      `${this.apiUrl}/school/${tenantId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      }
+    );
   }
 
   getStudents(classId: string): Observable<any> {

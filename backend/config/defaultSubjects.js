@@ -1,16 +1,41 @@
 module.exports = {
   nursery: [
-    'Numeracy', 'Literacy', 'Drawing', 'Rhymes', 'Coloring', 'Story Time'
+    { name: 'Numeracy', code: 'NUM' },
+    { name: 'Literacy', code: 'LIT' },
+    { name: 'Drawing', code: 'DRW' },
+    { name: 'Rhymes', code: 'RHY' },
+    { name: 'Coloring', code: 'CLR' },
+    { name: 'Story Time', code: 'STO' },
   ],
   primary: [
-    'Mathematics', 'English', 'Basic Science', 'Social Studies',
-    'Creative Arts', 'Physical & Health Education', 'ICT'
+    { name: 'Mathematics', code: 'MATH' },
+    { name: 'English', code: 'ENG' },
+    { name: 'Basic Science', code: 'BSC' },
+    { name: 'Social Studies', code: 'SOC' },
+    { name: 'Creative Arts', code: 'ART' },
+    { name: 'Physical & Health Education', code: 'PHE' },
+    { name: 'ICT', code: 'ICT' },
   ],
-  secondary: [ // JSS
-    'Mathematics', 'English', 'Basic Science', 'Basic Technology',
-    'Social Studies', 'Business Studies', 'Agricultural Science', 'Civic Education', 'ICT',
-    'Physics', 'Chemistry', 'Biology',
-    'Further Mathematics', 'Geography', 'Economics',
-    'Government', 'Literature', 'CRS/IRS', 'Commerce', 'Accounting'
+  secondary: [
+    { name: 'Mathematics', code: 'MATH' },
+    { name: 'English', code: 'ENG' },
+    { name: 'Basic Science', code: 'BSC' },
+    { name: 'Basic Technology', code: 'BTECH' },
+    { name: 'Social Studies', code: 'SOC' },
+    { name: 'Business Studies', code: 'BUS' },
+    { name: 'Agricultural Science', code: 'AGR' },
+    { name: 'Civic Education', code: 'CIV' },
+    { name: 'ICT', code: 'ICT' },
+    { name: 'Physics', code: 'PHY' },
+    { name: 'Chemistry', code: 'CHEM' },
+    { name: 'Biology', code: 'BIO' },
+    { name: 'Further Mathematics', code: 'FMATH' },
+    { name: 'Geography', code: 'GEO' },
+    { name: 'Economics', code: 'ECO' },
+    { name: 'Government', code: 'GOV' },
+    { name: 'Literature', code: 'LIT' },
+    { name: 'CRS/IRS', code: 'CRS' },
+    { name: 'Commerce', code: 'COM' },
+    { name: 'Accounting', code: 'ACC' },
   ],
 };

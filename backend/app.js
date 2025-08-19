@@ -18,7 +18,7 @@ app.use('/schools', require('./routes/school.routes'));
 app.use('/classes', require('./routes/class.routes'));
 app.use('/notices', require('./routes/notice.routes'));
 app.use('/subjects', require('./routes/subject.routes'));
-app.use('/terms', require('./routes/term.routes'));
+app.use('/timetable', require('./routes/timetable.routes'));
 
 
 app.get('/', (req, res) => res.send('🌍 Skoolly API up & running!'));

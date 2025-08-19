@@ -1,53 +1,43 @@
-<mat-card>
-  <h2>📅 Timetable Builder</h2>
+<mat-card class="timetable">
+  <div class="header">
+    <h2>📅 Weekly Timetable</h2>
 
-  <mat-form-field appearance="fill" class="class-selector">
-    <mat-label>Select Class</mat-label>
-    <mat-select [(value)]="selectedClass">
-      <mat-option *ngFor="let cls of classes" [value]="cls">{{ cls.name }}</mat-option>
-    </mat-select>
-  </mat-form-field>
+    <!-- Dropdown for classes -->
+    <mat-form-field appearance="outline" class="class-select">
+      <mat-label>Select Class</mat-label>
+      <mat-select [(value)]="selectedClass" (selectionChange)="onClassChange()">
+        <mat-option *ngFor="let cls of classes" [value]="cls._id">
+          {{ cls.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
 
-    <div class="controls">
-        <div class="period-controls">
-            <button mat-stroked-button color="primary" (click)="addPeriod()">
-                <mat-icon>add</mat-icon>
-                Add Period
-            </button>
-            
-            <button mat-stroked-button color="warn" (click)="removeLastPeriod()">
-                <mat-icon>remove</mat-icon>
-                Remove Last Period
-            </button>
+  <div class="timetable-grid" *ngIf="selectedClass">
+    <!-- Days headers -->
+    <div class="day-header"></div>
+    <div class="day-header" *ngFor="let day of days">{{ day }}</div>
+
+    <!-- Timetable rows -->
+    <div class="time-row" *ngFor="let time of times">
+        <div class="time-label">{{ time }}</div>
+
+        <div
+            class="time-slot"
+            *ngFor="let day of days"
+            (click)="openSubjectSelector(day, time)"
+        >
+        <div
+            class="class-block"
+            *ngIf="getClasses(day, time).length > 0"
+            [style.background]="getClasses(day, time)[0].color"
+        >
+            {{ getClasses(day, time)[0].subjectName }}
         </div>
-        <div class="export-controls">
-            <button mat-flat-button color="accent" (click)="exportToPDF()">
-                <mat-icon>picture_as_pdf</mat-icon> Export PDF
-            </button>
-
-            <button mat-flat-button color="primary" (click)="exportToExcel()">
-                <mat-icon>table_view</mat-icon> Export Excel
-            </button>
+        <div *ngIf="getClasses(day, time).length === 0" class="empty-slot">
+            + Assign
+        </div>
         </div>
     </div>
-
-    <div class="timetable-scroll-container">
-        <div class="timetable-grid" #timetableGrid>
-            <div class="grid-row header">
-                <div class="cell header-cell">Day / Period</div>
-                <div class="cell" *ngFor="let period of periods">{{ period }}</div>
-            </div>
-
-            <div class="grid-row" *ngFor="let day of days">
-                <div class="cell header-cell">{{ day }}</div>
-                <div
-                    class="cell editable"
-                    *ngFor="let period of periods"
-                    (click)="editCell(day, period)"
-                >
-                    {{ timetable[day + '_' + period] || '—' }}
-                </div>
-            </div>
-        </div>
     </div>
 </mat-card>

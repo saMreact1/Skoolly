@@ -10,13 +10,17 @@ exports.getClasses = async (req, res) => {
       return res.status(400).json({ message: 'Missing tenant ID' });
     }
 
-    const classes = await Class.find({ tenantId });
+    const classes = await Class.find({ tenantId })
+      .populate('assignedTeacher', 'fullName email')
+      .populate('students', 'fullName email');
+
     res.json(classes);
   } catch (error) {
     console.error('❌ Error getting classes:', error);
     res.status(500).json({ message: 'Server error fetching classes' });
   }
 };
+
 
 // CREATE a new class
 exports.createClass = async (req, res) => {

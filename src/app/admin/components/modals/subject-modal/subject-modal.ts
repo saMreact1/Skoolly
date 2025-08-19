@@ -11,6 +11,7 @@ import { TeacherService } from '../../../../core/services/teacher.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NgFor, NgIf } from '@angular/common';
+import { SubjectService } from '../../../../core/services/subject.service';
 
 @Component({
   selector: 'app-subject-modal',
@@ -39,11 +40,12 @@ export class SubjectModal implements OnInit {
     private classService: ClassService,
     private teacher: TeacherService,
     private snack: MatSnackBar,
-    private auth: AuthService
+    private auth: AuthService,
+    private subject: SubjectService
   ) {
     this.form = this.fb.group({
       name: [data?.name || '', Validators.required],
-      class: [data?.class || '', Validators.required],
+      code: [data?.code || '', Validators.required],
       teacher: [data?.teacher || '', Validators.required]
     });
   }
@@ -78,9 +80,26 @@ export class SubjectModal implements OnInit {
   }
 
   save() {
-    if (this.form.valid) {
-      this.dialogRef.close(this.form.value);
-    }
+    if (this.form.invalid) return;
+
+    const payload = this.form.value;
+    const request$ = this.data?._id
+      ? this.subject.updateSubject(this.data._id, payload)
+      : this.subject.addSubject(payload);
+
+    request$.subscribe({
+      next: (newOrUpdatedSubject) => {
+        this.dialogRef.close(newOrUpdatedSubject);
+        this.snack.open(
+          this.data?.id ? 'Subject updated successfully' : 'Subject added successfully',
+          'Close',
+          { duration: 3000 }
+        )
+      },
+      error: () => {
+        this.snack.open('Failed to save subject', '', { duration: 3000 });
+      }
+    })
   }
 
   close() {

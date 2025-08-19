@@ -36,9 +36,10 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './subjects.scss'
 })
 export class Subjects implements OnInit {
-  // subjects: Subject[] = [];
-  columnsToDisplay = ['name', 'class', 'teacher', 'actions'];
-  dataSource = new MatTableDataSource<any>([])
+  subjects: Subject[] = [];
+  teachers: any[] = [];
+  columnsToDisplay = ['name', 'code', 'teacher', 'actions'];
+  dataSource = new MatTableDataSource<Subject>();
 
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -49,109 +50,92 @@ export class Subjects implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this.loadSubjects();
-
-    this.dataSource.data = [
-      { name: 'Mathematics', class: 'JSS1', teacher: 'Mr. Dada' },
-      { name: 'English', class: 'JSS1', teacher: 'Ms. Florence' }
-    ];
-  }
-
-  ngAfterViewInit() {
-    this.dataSource.sort = this.sort;
+    this.loadSubjects();
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
-    this.dataSource.filter = filterValue;
   }
 
-  // loadSubjects() {
-  //   this.subject.getSubjects().subscribe({
-  //     next: (data: Subject[]) => {
-  //       this.subjects = data;
-  //     },
-  //     error: (err) => {
-  //       console.error('Error loading subjects', err);
-  //       this.snack.open('Failed to load subjects', 'Close', {
-  //         duration: 3000,
-  //       });
-  //     }
-  //   });
-  // }
-
-  // openAddSubjectModal() {
-  //   const dialogRef = this.dialog.open(SubjectModal, { width: '400px' });
-
-  //   dialogRef.afterClosed().subscribe(result => {
-  //     if (result) {
-  //       this.subject.addSubject(result).subscribe(newSubj => {
-  //         this.subjects.push(newSubj);
-  //       })
-  //     }
-  //   });
-  // }
-  openAddSubjectModal() {
-    const dialogRef = this.dialog.open(SubjectModal, { width: '400px' });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.dataSource.data = [...this.dataSource.data, result];
+  loadSubjects() {
+    this.subject.getSubjects().subscribe({
+      next: (data: Subject[]) => {
+        this.subjects = data;
+        this.dataSource.data = data;
+      },
+      error: (err) => {
+        console.error('Error loading subjects', err);
+        this.snack.open('Failed to load subjects', 'Close', {
+          duration: 3000,
+        });
       }
     });
   }
 
-  // editSubject(subject: Subject) {
-  //   const dialogRef = this.dialog.open(SubjectModal, {
-  //     width: '400px',
-  //     data: {...subject}
-  //   });
+  openAddSubjectModal(subject?: Subject) {
+    const dialogRef = this.dialog.open(SubjectModal, { width: '400px', data: subject });
 
-  //   dialogRef.afterClosed().subscribe(updated => {
-  //     if (updated && updated._id) {
-  //       this.subject.updateSubject(updated._id, updated).subscribe(res => {
-  //         const index = this.subjects.findIndex(s => s._id === subject._id)
-  //       })
-  //     };
-  //   });
-  // }
-  editSubject(subject: any) {
+    dialogRef.afterClosed().subscribe(result => {
+      if (!result) return;
+
+      if (subject) {
+        const idx = this.subjects.findIndex(s => s._id === result._id);
+        if (idx !== -1) {
+          this.subjects[idx] = result;
+        }
+      } else {
+        this.subjects.push(result);
+      }
+
+      // ✅ Always update the table
+      this.dataSource.data = [...this.subjects];
+    });
+  }
+
+  editSubject(subject: Subject) {
     const dialogRef = this.dialog.open(SubjectModal, {
       width: '400px',
-      data: subject
+      data: { ...subject }
     });
 
     dialogRef.afterClosed().subscribe(updated => {
-      if (updated) {
-        const index = this.dataSource.data.indexOf(subject);
-        const updatedData = [...this.dataSource.data];
-        updatedData[index] = updated;
-        this.dataSource.data = updatedData;
+      if (updated && updated._id) {
+        this.subject.updateSubject(updated._id, updated).subscribe(res => {
+          const idx = this.dataSource.data.findIndex(s => s._id === res._id);
+          if (idx !== -1) {
+            const updatedData = [...this.dataSource.data];
+
+            // 🔑 replace teacher with the actual object
+            const teacherObj = this.teachers.find(t => t._id === updated.teacher);
+            updated.teacher = teacherObj || res.teacher;
+
+            updatedData[idx] = updated;
+            this.dataSource.data = updatedData;
+          }
+        });
       }
     });
   }
 
-  // deleteSubject(subject: Subject) {
-  //   if (subject._id) {
-  //     const confirmDialog = this.dialog.open(ConfirmDialogComponent, {
-  //       width: '350px',
-  //       data: {
-  //         title: 'Delete Class',
-  //         message: 'Are you sure you want to delete this subject?'
-  //       }
-  //     });
-  
-  //     confirmDialog.afterClosed().subscribe(result => {
-  //       if (result) {
-  //         this.subject.deleteSubject(result).subscribe(() => {
-  //           this.subjects = this.subjects.filter(s => s._id !== subject._id);
-  //         })
-  //         this.snack.open('Class deleted', 'Close', { duration: 3000 });
-  //       }
-  //     });
-  //   }
-  // }
-  deleteSubject(subject: any) {
-    this.dataSource.data = this.dataSource.data.filter(s => s !== subject);
+  deleteSubject(subject: Subject) {
+    if (subject._id) {
+      const confirmDialog = this.dialog.open(ConfirmDialogComponent, {
+        width: '350px',
+        data: {
+          title: 'Delete Subject',
+          message: 'Are you sure you want to delete this subject?'
+        }
+      });
+
+      confirmDialog.afterClosed().subscribe(result => {
+        if (result) {
+          this.subject.deleteSubject(subject._id!).subscribe(() => {
+            this.subjects = this.subjects.filter(s => s._id !== subject._id);
+            this.dataSource.data = this.subjects;
+            this.snack.open('Subject deleted', 'Close', { duration: 3000 });
+          });
+        }
+      });
+    }
   }
 }

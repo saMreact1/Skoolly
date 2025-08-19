@@ -153,7 +153,8 @@ export class Auth implements OnInit {
       next: (classes) => {
         this.availableClasses = classes;
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error fetching classes:', err);
         this.snack.open('Could not fetch classes for this school.', '', {
           duration: 3000,
           panelClass: ['white-bg-snack']
